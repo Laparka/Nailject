@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2017",
+    "esModuleInterop": true,
     "module": "commonjs",
     "declaration": true,
-    "outDir": "./lib",
     "strict": true,
     "types": [
       "jest",
       "node"
     ]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "bin", "index.ts"],
   "exclude": ["node_modules", "**/__tests__/*"]
 }
