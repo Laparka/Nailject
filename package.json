@@ -2,7 +2,7 @@
   "name": "nailject",
   "version": "0.0.1",
   "description": "The TypeScript-only Dependency Injection Library based on generated Service Locators for each registered service",
-  "main": "src/index.ts",
+  "main": "lib/index.js",
   "scripts": {
     "test": "jest --watch",
     "build": "tsc",
