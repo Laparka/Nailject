@@ -2,16 +2,19 @@
 
 import commander from 'commander';
 import { CommanderStatic } from 'commander';
-const ServiceResolversGenerator = require("../src/services/serviceResolversGenerator");
+import ServiceResolversGenerator from '../services/serviceResolversGenerator';
 
 const program: CommanderStatic = commander;
 program
   .version(require('../package.json').version)
-  .usage('[options] <filename>')
+  .usage('<filename> <outputDir> [options]')
   .parse(process.argv);
 
 const options = {
-  filename: program.args[0]
+  filename: program.args[0],
+  outputDir: program.args[1]
 };
 
 console.log(`Launched via CLI: ${JSON.stringify(options)}`);
+const generator = new ServiceResolversGenerator();
+generator.generateServiceResolvers(options.filename, options.outputDir);

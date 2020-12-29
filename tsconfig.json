@@ -10,6 +10,6 @@
       "node"
     ]
   },
-  "include": ["src/**/*", "bin", "index.ts"],
+  "include": ["bin", "interfaces", "services", "index.ts"],
   "exclude": ["node_modules", "**/__tests__/*"]
 }

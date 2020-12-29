@@ -103,7 +103,7 @@ dist
 # TernJS port file
 .tern-port
 .idea/**
-src/testModule/**
+testModule/**
 /lib/
 package-lock.json
 *.[j|d.t]s
