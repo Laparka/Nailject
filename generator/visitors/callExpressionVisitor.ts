@@ -1,6 +1,6 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { CallExpression, Node, SyntaxKind } from 'typescript';
-import { GeneratorContext } from '../generatorContext';
+import { GeneratorContext, ServiceResolverDeclaration } from '../generatorContext';
 import { LifetimeScope } from '../../api/containerBuilder';
 
 export default class CallExpressionVisitor extends NodeVisitorBase<CallExpression> {
@@ -8,7 +8,7 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
     return node.kind === SyntaxKind.CallExpression;
   }
 
-  doVisit(node: CallExpression, context: GeneratorContext): Map<string, string[]> | undefined {
+  doVisit(node: CallExpression, context: GeneratorContext): undefined {
     if (node.arguments.length !== 1 || !node.typeArguments || node.typeArguments.length !== 2) {
       return;
     }
@@ -19,17 +19,17 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
     }
 
     const instanceName = methodCallTokens.keys().next().value;
-    if (instanceName !== context.instanceName) {
+    const instanceNameTokens = instanceName.split(/[.]/g);
+    if (instanceNameTokens.length != 2 || instanceNameTokens[0] !== context.instanceName) {
       return;
     }
 
-    const methodNameTokens = methodCallTokens.get(instanceName)!;
-    if (methodNameTokens.length !== 1) {
+    if (methodCallTokens.get(instanceName)!.length !== 0) {
       return;
     }
 
     let scope: LifetimeScope;
-    switch (methodNameTokens[0]) {
+    switch (instanceNameTokens[1]) {
       case 'addSingleton': {
         scope = 'Singleton';
         break;
@@ -41,14 +41,29 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       }
 
       default: {
-        throw new Error(`Not supported registration-method ${methodNameTokens[0]}`);
+        throw new Error(`Not supported registration-method ${instanceNameTokens[1]}`);
       }
     }
 
-    const serviceTypeTokens = this.visitNext(node.typeArguments[0], context);
-    const instanceTypeTokens = this.visitNext(node.typeArguments[1], context);
-    const symbolTypeTokens = this.visitNext(node.arguments[0], context);
-    throw Error(`I stopped here`)
+    const resolverDeclaration: ServiceResolverDeclaration = {
+      context: context,
+      dependencies: [],
+      instanceType: [],
+      serviceType: []
+    };
+    const serviceTypeTokens = this.addImport(node.typeArguments[0], resolverDeclaration);
+    const instanceTypeTokens = this.addImport(node.typeArguments[1], resolverDeclaration);
+    const symbolTypeTokens = this.addImport(node.arguments[0], resolverDeclaration);
   }
 
+  private addImport(node: Node, resolverDeclaration: ServiceResolverDeclaration): Map<string, string[]> {
+    const typeAccessTokens = this.visitNext(node, resolverDeclaration.context);
+    if (!typeAccessTokens || typeAccessTokens.size !== 1) {
+      throw Error(`Failed to parse the service resolver type arguments`)
+    }
+
+    const typeName = typeAccessTokens.keys().next().value;
+    const genericArgs = typeAccessTokens.get(typeName)!;
+    return typeAccessTokens;
+  }
 }

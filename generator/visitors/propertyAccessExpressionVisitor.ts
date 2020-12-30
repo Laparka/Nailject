@@ -26,7 +26,7 @@ export default class PropertyAccessExpressionVisitor extends NodeVisitorBase<Pro
 
     const propertyNamespace = propertyTokens.keys().next().value;
     return new Map<string, string[]>([
-        [instanceAccessorNamespace, [propertyNamespace]]
+        [[instanceAccessorNamespace, propertyNamespace].join('.'), []]
       ]
     );
   }

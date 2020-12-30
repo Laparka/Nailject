@@ -32,7 +32,7 @@ export default class TypeArgumentVisitor extends NodeVisitorBase<ExpressionWithT
 
     const genericArgsResult: string[] = [];
     if (genericArgs.length !== 0) {
-      genericArgsResult.push(`<${genericArgs.join(', ')}>`);
+      genericArgsResult.push(genericArgs.join(', '));
     }
 
     return new Map<string, string[]>([

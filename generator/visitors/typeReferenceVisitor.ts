@@ -31,7 +31,7 @@ export default class TypeReferenceVisitor extends NodeVisitorBase<TypeReferenceN
     const accessors = accessorTokens.get(accessorNamespace)!;
     const genericArgsResult: string[] = [];
     if (genericArgs.length !== 0) {
-      genericArgsResult.push(`<${genericArgs.join(', ')}>`);
+      genericArgsResult.push(genericArgs.join(', '));
     }
 
     return new Map<string, string[]>([
