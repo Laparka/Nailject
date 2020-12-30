@@ -106,5 +106,6 @@ dist
 testModule/**
 /lib/
 package-lock.json
-*.[j|d.t]s
+*.js
+*.d.ts
 !jest.config.js
