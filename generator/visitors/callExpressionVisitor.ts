@@ -32,6 +32,11 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       return;
     }
 
+    const typeSymbolNode = this.visitNext(node.arguments[0], context);
+    if (!typeSymbolNode) {
+      throw Error(`Registration type-symbol was not found`);
+    }
+
     let scope: LifetimeScope;
     switch (methodCallTokens.child.name) {
       case 'addSingleton': {
@@ -56,6 +61,7 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
 
     const usedImports: ImportType[] = [];
     addUsedImports(serviceTypeNode, context.imports, usedImports);
+    addUsedImports({name: typeSymbolNode.name, typeNames: [], child: null}, context.imports, usedImports);
     const instanceTypeNode = this.visitNext(node.typeArguments[1], context);
     if (!instanceTypeNode) {
       throw Error(`No instance type argument is defined for the ${methodCallTokens.child.name}-method`)
@@ -68,6 +74,7 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
 
     const resolverDeclaration: ServiceResolverDeclaration = {
       imports: usedImports,
+      typeSymbolNode: typeSymbolNode,
       instanceTypeNode: {
         type: instanceTypeNode,
         path: instanceImport

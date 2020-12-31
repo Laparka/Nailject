@@ -6,7 +6,7 @@ import AnyNodeVisitor from './visitors/anyNodeVisitor';
 import { LifetimeScope } from '../api/containerBuilder';
 import {  ServiceResolverDeclaration} from './generatorContext';
 
-export default class ServiceResolversGenerator {
+export default class RegistrationsParser {
   private readonly _visitor: NodeVisitor;
 
   constructor() {
@@ -19,7 +19,7 @@ export default class ServiceResolversGenerator {
     }
 
     const fileContent = readFileSync(registrationFilePath, { encoding: "utf8" });
-    const file: SourceFile = createSourceFile("inline-content.ts", fileContent.toString(), ScriptTarget.ES2015);
+    const file: SourceFile = createSourceFile("inline-content.ts", fileContent.toString(), ScriptTarget.ES2017);
     const syntax = file.getChildAt(0);
 
     const resolvers = new Map<LifetimeScope, ServiceResolverDeclaration[]>()

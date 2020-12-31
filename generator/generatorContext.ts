@@ -1,25 +1,18 @@
 import { LifetimeScope } from '../api/containerBuilder';
-import ServiceResolversGenerator from './serviceResolversGenerator';
+import RegistrationsParser from './registrationsParser';
 
 export type GeneratorMode = 'Module' | 'Dependent';
-
-export type ConstructorInjectionsDeclaration = {
-
-};
-
-export type InstanceTypeDependencies = {
-  constructorArgs: NodeResult[],
-  imports: ImportType[]
-};
 
 export type InstanceTypeDeclaration = {
   type: NodeResult;
   path: ImportType;
 };
+
 export type ServiceResolverDeclaration = {
   imports: ImportType[],
   serviceTypeNode: NodeResult;
   instanceTypeNode: InstanceTypeDeclaration;
+  typeSymbolNode: NodeResult;
 };
 
 export type NodeResult = {
@@ -41,5 +34,5 @@ export type GeneratorContext = {
   instanceName: string;
   imports: ImportType[],
   resolvers: Map<LifetimeScope, ServiceResolverDeclaration[]>,
-  generator: ServiceResolversGenerator
+  generator: RegistrationsParser
 };

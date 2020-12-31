@@ -1,15 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "esModuleInterop": true,
-    "module": "commonjs",
-    "declaration": true,
-    "strict": true,
-    "types": [
-      "jest",
-      "node"
-    ]
+    "moduleResolution": "Node",
+    "allowJs": true,
+    "noUnusedLocals": true
   },
-  "include": ["bin", "interfaces", "services", "index.ts"],
+  "compileOnSave": false,
+  "include": ["bin", "generator", "api", "services", "index.ts"],
   "exclude": ["node_modules", "**/__tests__/*"]
 }
