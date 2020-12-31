@@ -8,7 +8,7 @@ export default class ExpressionStatementVisitor extends NodeVisitorBase<Expressi
   }
 
   doVisit(node: ExpressionStatement, context: GeneratorContext): void {
-    const callTokens = this.visitNext(node.expression, context)
+    this.visitNext(node.expression, context)
   }
 
 }

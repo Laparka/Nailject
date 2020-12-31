@@ -1,6 +1,6 @@
 import { Node, SyntaxKind, SyntaxList } from 'typescript';
 import { NodeVisitorBase } from './nodeVisitor';
-import { GeneratorContext, NodeResult } from '../generatorContext';
+import { GeneratorContext } from '../generatorContext';
 
 export default class SyntaxListVisitor extends NodeVisitorBase<SyntaxList> {
   canVisit(node: Node): boolean {

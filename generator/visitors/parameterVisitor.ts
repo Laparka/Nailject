@@ -72,12 +72,15 @@ export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclarati
     }
 
     const usedImports: ImportType[] = [];
-    addUsedImports(argType, context.imports, usedImports)
+    const argImport = addUsedImports(argType, context.imports, usedImports)
     argumentsStorage.push({
       serviceTypeNode: argType,
-      instanceTypeNode: argType,
+      instanceTypeNode: {
+        path: argImport,
+        type: argType
+      },
       imports: usedImports,
-      context: context
+      typeSymbolNode: argType
     })
 
     return argType;

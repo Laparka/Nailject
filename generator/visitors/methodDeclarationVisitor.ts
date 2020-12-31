@@ -1,6 +1,6 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { MethodDeclaration, Node, SyntaxKind } from 'typescript';
-import { GeneratorContext, NodeResult } from '../generatorContext';
+import { GeneratorContext } from '../generatorContext';
 
 export default class MethodDeclarationVisitor extends NodeVisitorBase<MethodDeclaration> {
   canVisit(node: Node): boolean {
