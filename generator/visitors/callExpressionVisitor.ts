@@ -73,6 +73,7 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
     }
 
     const resolverDeclaration: ServiceResolverDeclaration = {
+      scope: scope,
       imports: usedImports,
       typeSymbolNode: typeSymbolNode,
       instanceTypeNode: {
@@ -82,12 +83,6 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       serviceTypeNode: serviceTypeNode
     };
 
-    let scopedResolvers = context.resolvers.get(scope);
-    if (!scopedResolvers) {
-      scopedResolvers = [];
-      context.resolvers.set(scope, scopedResolvers);
-    }
-
-    scopedResolvers.push(resolverDeclaration);
+    context.resolvers.push(resolverDeclaration);
   }
 }

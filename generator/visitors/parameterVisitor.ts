@@ -65,22 +65,17 @@ export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclarati
       throw Error(`Failed to find the constructor argument type`);
     }
 
-    let argumentsStorage = context.resolvers.get('Transient');
-    if (!argumentsStorage) {
-      argumentsStorage = [];
-      context.resolvers.set('Transient', argumentsStorage);
-    }
-
     const usedImports: ImportType[] = [];
     const argImport = addUsedImports(argType, context.imports, usedImports)
-    argumentsStorage.push({
-      serviceTypeNode: argType,
+    context.resolvers.push({
       instanceTypeNode: {
-        path: argImport,
-        type: argType
+        type: argType,
+        path: argImport
       },
-      imports: usedImports,
-      typeSymbolNode: argType
+      scope: 'Transient',
+      typeSymbolNode: argType,
+      imports: context.imports,
+      serviceTypeNode: argType
     })
 
     return argType;

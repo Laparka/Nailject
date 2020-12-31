@@ -3,8 +3,7 @@ import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { NodeVisitor } from './visitors/nodeVisitor';
 import AnyNodeVisitor from './visitors/anyNodeVisitor';
-import { LifetimeScope } from '../api/containerBuilder';
-import {  ServiceResolverDeclaration} from './generatorContext';
+import { InstanceTypeDeclaration, ServiceResolverDeclaration } from './generatorContext';
 
 export default class RegistrationsParser {
   private readonly _visitor: NodeVisitor;
@@ -22,7 +21,7 @@ export default class RegistrationsParser {
     const file: SourceFile = createSourceFile("inline-content.ts", fileContent.toString(), ScriptTarget.ES2017);
     const syntax = file.getChildAt(0);
 
-    const resolvers = new Map<LifetimeScope, ServiceResolverDeclaration[]>()
+    const resolvers: ServiceResolverDeclaration[] = [];
     this._visitor.visit(syntax, {
       modulePath: registrationFilePath,
       instanceName: className,
@@ -32,14 +31,31 @@ export default class RegistrationsParser {
       generator: this
     });
 
-    const result: ServiceResolverDeclaration[] = [];
-    const scopesIterator = resolvers.keys();
-    let next = scopesIterator.next();
-    while (next && !next.done) {
-      result.push(...resolvers.get(next.value)!);
-      next = scopesIterator.next();
+    return resolvers;
+  }
+
+  parseDependencies(instanceTypeNode: InstanceTypeDeclaration): InstanceTypeDeclaration[] {
+    const filePath = `${instanceTypeNode.path.path}.ts`;
+    if (!existsSync(path.normalize(filePath))) {
+      throw Error(`File ${filePath} was not found`);
     }
 
-    return result;
+    const fileContent = readFileSync(filePath, { encoding: "utf8" });
+    const file: SourceFile = createSourceFile("inline-content.ts", fileContent.toString(), ScriptTarget.ES2017);
+    const syntax = file.getChildAt(0);
+
+    const resolvers: ServiceResolverDeclaration[] = [];
+    this._visitor.visit(syntax, {
+      modulePath: filePath,
+      instanceName: instanceTypeNode.type.name,
+      mode: 'Dependent',
+      resolvers: resolvers,
+      imports: [],
+      generator: this
+    });
+
+    const argNodes: InstanceTypeDeclaration[] = [];
+    resolvers.forEach(node => argNodes.push(node.instanceTypeNode));
+    return argNodes;
   }
 }

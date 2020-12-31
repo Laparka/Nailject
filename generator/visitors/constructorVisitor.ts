@@ -16,5 +16,4 @@ export default class ConstructorVisitor extends NodeVisitorBase<ConstructorDecla
       this.visitNext(node.parameters[i], context);
     }
   }
-
 }

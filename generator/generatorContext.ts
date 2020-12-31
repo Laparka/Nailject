@@ -9,7 +9,8 @@ export type InstanceTypeDeclaration = {
 };
 
 export type ServiceResolverDeclaration = {
-  imports: ImportType[],
+  scope: LifetimeScope;
+  imports: ImportType[];
   serviceTypeNode: NodeResult;
   instanceTypeNode: InstanceTypeDeclaration;
   typeSymbolNode: NodeResult;
@@ -33,6 +34,6 @@ export type GeneratorContext = {
   mode: GeneratorMode;
   instanceName: string;
   imports: ImportType[],
-  resolvers: Map<LifetimeScope, ServiceResolverDeclaration[]>,
+  resolvers: ServiceResolverDeclaration[],
   generator: RegistrationsParser
 };
