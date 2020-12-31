@@ -3,7 +3,6 @@ import { CallExpression, Node, SyntaxKind } from 'typescript';
 import {
   GeneratorContext,
   ImportType,
-  InstanceTypeDependencies,
   ServiceResolverDeclaration,
 } from '../generatorContext';
 import { LifetimeScope } from '../../api/containerBuilder';
@@ -67,24 +66,11 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       throw Error(`The instance class must be exportable and located outside of the registration module`)
     }
 
-    let instanceTypeDeps: InstanceTypeDependencies | undefined;
-    if (!instanceImport.fromPackage) {
-      instanceTypeDeps = context.generator.getDependencies(instanceImport.path, instanceImport.name);
-    }
-
-    if (!instanceTypeDeps) {
-      instanceTypeDeps = {
-        constructorArgs: [],
-        imports: []
-      };
-    }
-
     const resolverDeclaration: ServiceResolverDeclaration = {
-      context: context,
       imports: usedImports,
       instanceTypeNode: {
         type: instanceTypeNode,
-        dependencies: instanceTypeDeps
+        path: instanceImport
       },
       serviceTypeNode: serviceTypeNode
     };

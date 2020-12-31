@@ -2,7 +2,6 @@
 
 import commander from 'commander';
 import { CommanderStatic } from 'commander';
-import ServiceResolversGenerator from '../services/serviceResolversGenerator';
 
 const program: CommanderStatic = commander;
 program
@@ -16,5 +15,3 @@ const options = {
 };
 
 console.log(`Launched via CLI: ${JSON.stringify(options)}`);
-const generator = new ServiceResolversGenerator();
-generator.generateServiceResolvers(options.filename, options.outputDir);

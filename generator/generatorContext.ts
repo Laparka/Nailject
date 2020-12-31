@@ -14,10 +14,9 @@ export type InstanceTypeDependencies = {
 
 export type InstanceTypeDeclaration = {
   type: NodeResult;
-  dependencies: InstanceTypeDependencies;
+  path: ImportType;
 };
 export type ServiceResolverDeclaration = {
-  context: GeneratorContext;
   imports: ImportType[],
   serviceTypeNode: NodeResult;
   instanceTypeNode: InstanceTypeDeclaration;
