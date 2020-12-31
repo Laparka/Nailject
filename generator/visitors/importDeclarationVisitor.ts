@@ -2,13 +2,14 @@ import { NodeVisitorBase } from './nodeVisitor';
 import { ImportDeclaration, Node, SyntaxKind } from 'typescript';
 import { GeneratorContext, ImportType } from '../generatorContext';
 import * as path from 'path';
+import { tryFindImportType } from '../utils';
 
 export default class ImportDeclarationVisitor extends NodeVisitorBase<ImportDeclaration> {
   canVisit(node: Node): boolean {
     return node.kind === SyntaxKind.ImportDeclaration;
   }
 
-  doVisit(node: ImportDeclaration, context: GeneratorContext): undefined {
+  doVisit(node: ImportDeclaration, context: GeneratorContext): void {
     if (!node.importClause) {
       return
     }
@@ -18,12 +19,12 @@ export default class ImportDeclarationVisitor extends NodeVisitorBase<ImportDecl
       throw Error("The ImportDeclaration has ImportClause missing");
     }
 
-    const modulePath = this.visitNext(node.moduleSpecifier, context);
-    if (!modulePath || modulePath.size !== 1) {
+    const pathSpecifier = this.visitNext(node.moduleSpecifier, context);
+    if (!pathSpecifier) {
       throw Error("ImportDeclaration From-path must be the only one in the list");
     }
 
-    let importPath = modulePath.keys().next().value;
+    let importPath = pathSpecifier.name;
     if (importPath.length !== 0 && importPath[0] === '.') {
       const moduleDir = path.parse(context.modulePath).dir;
       importPath = path.join(moduleDir, importPath).replace(/\\/g, '/');
@@ -32,23 +33,31 @@ export default class ImportDeclarationVisitor extends NodeVisitorBase<ImportDecl
       }
     }
 
-    const iterator = importClause.keys();
-    let next = iterator.next();
-    while (next && !next.done) {
-      const imported = importClause.get(next.value)!;
-      const importType: ImportType = {
-        alias: "",
-        name: next.value,
-        fromPackage: importPath[0] !== '.',
-        path: importPath
-      };
+    const iterator = [...importClause.typeNames];
+    if (iterator.length === 0) {
+      iterator.push(importClause);
+    }
 
-      if (imported.length === 1) {
-        importType.alias = imported[0];
+    for(let i = 0; i < iterator.length; i++) {
+      let alias = iterator[i].name;
+      if (iterator[i].child) {
+        alias = iterator[i].child!.name;
       }
 
-      context.imports.push(importType);
-      next = iterator.next();
+      if (!alias) {
+        alias = iterator[i].name;
+      }
+
+      const importType: ImportType = {
+        name: iterator[i].name,
+        path: importPath,
+        fromPackage: importPath[0] !== '.',
+        alias: alias
+      };
+
+      if (!tryFindImportType(importType.alias, context.imports)) {
+        context.imports.push(importType);
+      }
     }
   }
 }

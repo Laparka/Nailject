@@ -13,17 +13,16 @@ export default class ClassDeclarationVisitor extends NodeVisitorBase<ClassDeclar
     return false;
   }
 
-  doVisit(node: ClassDeclaration, context: GeneratorContext): undefined {
+  doVisit(node: ClassDeclaration, context: GeneratorContext): void {
     if (!node.name) {
       return;
     }
     const classNameTokens = this.visitNext(node.name, context);
-    if (!classNameTokens || classNameTokens.size !== 1) {
+    if (!classNameTokens) {
       throw Error("The class name is not defined");
     }
 
-    const className = classNameTokens.keys().next().value;
-    if (context.instanceName !== className) {
+    if (context.instanceName !== classNameTokens.name) {
       return;
     }
 
@@ -44,13 +43,13 @@ export default class ClassDeclarationVisitor extends NodeVisitorBase<ClassDeclar
       if (!implementRegistration) {
         return;
       }
-
-      for(let i = 0; i < node.members.length; i++) {
-        this.visitNext(node.members[i], context)
-      }
     }
-    else if (context.mode === 'Dependent') {
-      throw Error(`Not Implemented`);
+    else if (context.mode !== 'Dependent') {
+      return;
+    }
+
+    for(let i = 0; i < node.members.length; i++) {
+      this.visitNext(node.members[i], context)
     }
   }
 

@@ -1,6 +1,6 @@
 import { Node } from 'typescript';
 import { NodeVisitor } from './nodeVisitor';
-import { GeneratorContext } from '../generatorContext';
+import { GeneratorContext, NodeResult } from '../generatorContext';
 import SyntaxListVisitor from './syntaxListVisitor';
 import ImportDeclarationVisitor from './importDeclarationVisitor';
 import ImportClauseVisitor from './importClauseVisitor';
@@ -18,6 +18,10 @@ import MethodDeclarationVisitor from './methodDeclarationVisitor';
 import ParameterVisitor from './parameterVisitor';
 import ExpressionStatementVisitor from './expressionStatementVisitor';
 import CallExpressionVisitor from './callExpressionVisitor';
+import QualifiedNameVisitor from './qualifiedNameVisitor';
+import ConstructorVisitor from './constructorVisitor';
+import PrimitiveTypeVisitor from './primitiveTypeVisitor';
+import ArrayTypeVisitor from './arrayTypeVisitor';
 
 export default class AnyNodeVisitor implements NodeVisitor {
   private readonly _visitors: NodeVisitor[];
@@ -39,20 +43,22 @@ export default class AnyNodeVisitor implements NodeVisitor {
       new MethodDeclarationVisitor(this),
       new ParameterVisitor(this),
       new ExpressionStatementVisitor(this),
-      new CallExpressionVisitor(this)
+      new CallExpressionVisitor(this),
+      new QualifiedNameVisitor(this),
+      new ConstructorVisitor(this),
+      new PrimitiveTypeVisitor(),
+      new ArrayTypeVisitor(this)
     ];
   }
   canVisit(node: Node): boolean {
     return true;
   }
 
-  visit(node: Node, context: GeneratorContext): Map<string, string[]> | undefined {
+  visit(node: Node, context: GeneratorContext): NodeResult | void {
     for(let i = 0; i < this._visitors.length; i++) {
       if (this._visitors[i].canVisit(node)) {
         return this._visitors[i].visit(node, context);
       }
     }
-
-    return new Map<string, string[]>();
   }
 }

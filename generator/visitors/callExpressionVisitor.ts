@@ -1,35 +1,40 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { CallExpression, Node, SyntaxKind } from 'typescript';
-import { GeneratorContext, ServiceResolverDeclaration } from '../generatorContext';
+import {
+  GeneratorContext,
+  ImportType,
+  InstanceTypeDependencies,
+  ServiceResolverDeclaration,
+} from '../generatorContext';
 import { LifetimeScope } from '../../api/containerBuilder';
+import { addUsedImports } from '../utils';
 
 export default class CallExpressionVisitor extends NodeVisitorBase<CallExpression> {
   canVisit(node: Node): boolean {
     return node.kind === SyntaxKind.CallExpression;
   }
 
-  doVisit(node: CallExpression, context: GeneratorContext): undefined {
+  doVisit(node: CallExpression, context: GeneratorContext): void {
     if (node.arguments.length !== 1 || !node.typeArguments || node.typeArguments.length !== 2) {
       return;
     }
 
     const methodCallTokens = this.visitNext(node.expression, context);
-    if (!methodCallTokens || methodCallTokens.size !== 1) {
+    if (!methodCallTokens) {
       return;
     }
 
-    const instanceName = methodCallTokens.keys().next().value;
-    const instanceNameTokens = instanceName.split(/[.]/g);
-    if (instanceNameTokens.length != 2 || instanceNameTokens[0] !== context.instanceName) {
+    const instanceName = methodCallTokens.name;
+    if (instanceName !== context.instanceName) {
       return;
     }
 
-    if (methodCallTokens.get(instanceName)!.length !== 0) {
+    if (!methodCallTokens.child) {
       return;
     }
 
     let scope: LifetimeScope;
-    switch (instanceNameTokens[1]) {
+    switch (methodCallTokens.child.name) {
       case 'addSingleton': {
         scope = 'Singleton';
         break;
@@ -41,29 +46,55 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       }
 
       default: {
-        throw new Error(`Not supported registration-method ${instanceNameTokens[1]}`);
+        throw new Error(`Not supported registration-method ${methodCallTokens.child.name}`);
       }
+    }
+
+    const serviceTypeNode = this.visitNext(node.typeArguments[0], context);
+    if (!serviceTypeNode) {
+      throw Error(`No service type argument is defined for the ${methodCallTokens.child.name}-method`)
+    }
+
+    const usedImports: ImportType[] = [];
+    addUsedImports(serviceTypeNode, context.imports, usedImports);
+    const instanceTypeNode = this.visitNext(node.typeArguments[1], context);
+    if (!instanceTypeNode) {
+      throw Error(`No instance type argument is defined for the ${methodCallTokens.child.name}-method`)
+    }
+
+    const instanceImport = addUsedImports(instanceTypeNode, context.imports, usedImports);
+    if (!instanceImport) {
+      throw Error(`The instance class must be exportable and located outside of the registration module`)
+    }
+
+    let instanceTypeDeps: InstanceTypeDependencies | undefined;
+    if (!instanceImport.fromPackage) {
+      instanceTypeDeps = context.generator.getDependencies(instanceImport.path, instanceImport.name);
+    }
+
+    if (!instanceTypeDeps) {
+      instanceTypeDeps = {
+        constructorArgs: [],
+        imports: []
+      };
     }
 
     const resolverDeclaration: ServiceResolverDeclaration = {
       context: context,
-      dependencies: [],
-      instanceType: [],
-      serviceType: []
+      imports: usedImports,
+      instanceTypeNode: {
+        type: instanceTypeNode,
+        dependencies: instanceTypeDeps
+      },
+      serviceTypeNode: serviceTypeNode
     };
-    const serviceTypeTokens = this.addImport(node.typeArguments[0], resolverDeclaration);
-    const instanceTypeTokens = this.addImport(node.typeArguments[1], resolverDeclaration);
-    const symbolTypeTokens = this.addImport(node.arguments[0], resolverDeclaration);
-  }
 
-  private addImport(node: Node, resolverDeclaration: ServiceResolverDeclaration): Map<string, string[]> {
-    const typeAccessTokens = this.visitNext(node, resolverDeclaration.context);
-    if (!typeAccessTokens || typeAccessTokens.size !== 1) {
-      throw Error(`Failed to parse the service resolver type arguments`)
+    let scopedResolvers = context.resolvers.get(scope);
+    if (!scopedResolvers) {
+      scopedResolvers = [];
+      context.resolvers.set(scope, scopedResolvers);
     }
 
-    const typeName = typeAccessTokens.keys().next().value;
-    const genericArgs = typeAccessTokens.get(typeName)!;
-    return typeAccessTokens;
+    scopedResolvers.push(resolverDeclaration);
   }
 }

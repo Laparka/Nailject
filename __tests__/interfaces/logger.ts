@@ -1,3 +1,3 @@
-export default interface Logger {
+export interface Logger {
     log(message: string): void;
 }
