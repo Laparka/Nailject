@@ -3,7 +3,7 @@ import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { NodeVisitor } from './visitors/nodeVisitor';
 import AnyNodeVisitor from './visitors/anyNodeVisitor';
-import { InstanceTypeDeclaration, ServiceResolverDeclaration } from './generatorContext';
+import { TypeDeclaration, ServiceResolverDeclaration} from './generatorContext';
 
 export default class RegistrationsParser {
   private readonly _visitor: NodeVisitor;
@@ -34,7 +34,7 @@ export default class RegistrationsParser {
     return resolvers;
   }
 
-  parseDependencies(instanceTypeNode: InstanceTypeDeclaration): InstanceTypeDeclaration[] {
+  parseDependencies(instanceTypeNode: TypeDeclaration): TypeDeclaration[] {
     const filePath = `${instanceTypeNode.path.path}.ts`;
     if (!existsSync(path.normalize(filePath))) {
       throw Error(`File ${filePath} was not found`);
@@ -54,7 +54,7 @@ export default class RegistrationsParser {
       generator: this
     });
 
-    const argNodes: InstanceTypeDeclaration[] = [];
+    const argNodes: TypeDeclaration[] = [];
     resolvers.forEach(node => argNodes.push(node.instanceTypeNode));
     return argNodes;
   }

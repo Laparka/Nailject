@@ -6,7 +6,8 @@ import {
   ServiceResolverDeclaration,
 } from '../generatorContext';
 import { LifetimeScope } from '../../api/containerBuilder';
-import { addUsedImports } from '../utils';
+import { addUsedImports, getSymbolName, toNamespace } from '../utils';
+import * as path from 'path';
 
 export default class CallExpressionVisitor extends NodeVisitorBase<CallExpression> {
   canVisit(node: Node): boolean {
@@ -14,7 +15,7 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
   }
 
   doVisit(node: CallExpression, context: GeneratorContext): void {
-    if (node.arguments.length !== 1 || !node.typeArguments || node.typeArguments.length !== 2) {
+    if (node.arguments.length !== 0 || !node.typeArguments || node.typeArguments.length !== 2) {
       return;
     }
 
@@ -30,11 +31,6 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
 
     if (!methodCallTokens.child) {
       return;
-    }
-
-    const typeSymbolNode = this.visitNext(node.arguments[0], context);
-    if (!typeSymbolNode) {
-      throw Error(`Registration type-symbol was not found`);
     }
 
     let scope: LifetimeScope;
@@ -60,8 +56,7 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
     }
 
     const usedImports: ImportType[] = [];
-    addUsedImports(serviceTypeNode, context.imports, usedImports);
-    addUsedImports({name: typeSymbolNode.name, typeNames: [], child: null}, context.imports, usedImports);
+    const serviceImport = addUsedImports(serviceTypeNode, context.imports, usedImports);
     const instanceTypeNode = this.visitNext(node.typeArguments[1], context);
     if (!instanceTypeNode) {
       throw Error(`No instance type argument is defined for the ${methodCallTokens.child.name}-method`)
@@ -75,12 +70,18 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
     const resolverDeclaration: ServiceResolverDeclaration = {
       scope: scope,
       imports: usedImports,
-      typeSymbolNode: typeSymbolNode,
       instanceTypeNode: {
         type: instanceTypeNode,
         path: instanceImport
       },
-      serviceTypeNode: serviceTypeNode
+      serviceTypeNode: {
+        type: serviceTypeNode,
+        path: serviceImport
+      },
+      registrationSymbol: {
+        symbolNamespace: toNamespace(path.parse(serviceImport.path).dir),
+        symbolId: getSymbolName(serviceTypeNode, usedImports)
+      }
     };
 
     context.resolvers.push(resolverDeclaration);

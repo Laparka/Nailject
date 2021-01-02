@@ -3,17 +3,22 @@ import RegistrationsParser from './registrationsParser';
 
 export type GeneratorMode = 'Module' | 'Dependent';
 
-export type InstanceTypeDeclaration = {
+export type TypeDeclaration = {
   type: NodeResult;
   path: ImportType;
+};
+
+export type RegistrationSymbol = {
+  symbolNamespace: string;
+  symbolId: string;
 };
 
 export type ServiceResolverDeclaration = {
   scope: LifetimeScope;
   imports: ImportType[];
-  serviceTypeNode: NodeResult;
-  instanceTypeNode: InstanceTypeDeclaration;
-  typeSymbolNode: NodeResult;
+  serviceTypeNode: TypeDeclaration;
+  instanceTypeNode: TypeDeclaration;
+  registrationSymbol:RegistrationSymbol;
 };
 
 export type NodeResult = {

@@ -1,6 +1,6 @@
 export interface ContainerBuilder {
-  addTransient<TService, TImplementation extends TService>(serviceTypeId: symbol): void;
-  addSingleton<TService, TImplementation extends TService>(serviceTypeId: symbol): void;
+  addTransient<TService, TImplementation extends TService>(): void;
+  addSingleton<TService, TImplementation extends TService>(): void;
 }
 
 
