@@ -18,7 +18,8 @@ export default class ImportClauseVisitor extends NodeVisitorBase<ImportClause> {
         path: '',
         kind: 'Default',
         alias: nameResult.name,
-        name: nameResult.name
+        name: nameResult.name,
+        isExternal: false
       }];
     }
 

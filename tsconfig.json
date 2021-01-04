@@ -5,7 +5,10 @@
     "allowJs": true,
     "noUnusedLocals": true,
     "baseUrl": "./",
-    "rootDir": "./"
+    "rootDir": "./",
+    "paths": {
+      "nailject/*": [ "*" ]
+    }
   },
   "compileOnSave": false,
   "include": ["bin", "generator", "api", "services", "index.ts"],

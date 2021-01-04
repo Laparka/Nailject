@@ -14,8 +14,8 @@ import {{ import.name }} from '{{ import.path }}';
 {% endcapture %}
 {{ newLine }}
 {%- endfor -%}
-import { {{ scope }}ServiceResolver, InstanceConstructor } from 'api/serviceResolver';
-import { ServiceProvider } from 'api/serviceProvider';
+import { {{ scope }}ServiceResolver, InstanceConstructor } from 'nailject/api/serviceResolver';
+import { ServiceProvider } from 'nailject/api/serviceProvider';
 
 export default class {{instance.displayName}}Of{{ service.displayName }}{{ scope }}ServiceResolver extends {{ scope }}ServiceResolver<{{service.accessorDeclaration}}> {
     doResolve(serviceProvider: ServiceProvider): {{service.accessorDeclaration}} {

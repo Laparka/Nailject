@@ -18,6 +18,7 @@ export default class NamedImportVisitor extends NodeVisitorBase<NamedImports> {
       specifiers.push({
         kind: 'Named',
         path: '',
+        isExternal: false,
         name: importSpecifierAccessor.name,
         alias: importSpecifierAccessor.child ? importSpecifierAccessor.child.name : importSpecifierAccessor.name
       });

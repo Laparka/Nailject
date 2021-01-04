@@ -19,6 +19,7 @@ export type ImportFrom = {
   name: string;
   alias: string;
   path: string;
+  isExternal: boolean;
 };
 
 export type ServiceDescriptor = {

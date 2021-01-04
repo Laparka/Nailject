@@ -7,9 +7,11 @@ import * as NL from "./services/nullLogger";
 import { ContainerBuilder as C } from '../api/containerBuilder';
 import * as D from '../api/dependenciesRegistration';
 import { TwoGenerics as ITwoGeneric, TwoGenericsImpl } from './interfaces/twoGenerics';
+import * as path from 'path';
 
 export default class Module implements D.DependenciesRegistration {
     register(containerBuilder: C): void {
+        path.parse('');
         containerBuilder.addTransient<LGR, NL.NullLogger>();
         containerBuilder.addSingleton<Monitor<LGR>, ConsoleMonitor<ConsoleLogger>>();
         containerBuilder.addSingleton<Monitor<string>, ConsoleMonitor<number>>();

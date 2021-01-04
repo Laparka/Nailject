@@ -17,7 +17,8 @@ export default class NamespaceImportVisitor extends NodeVisitorBase<NamespaceImp
       name: '*',
       alias: id.name,
       path: '',
-      kind: 'Namespace'
+      kind: 'Namespace',
+      isExternal: false,
     }];
   }
 }

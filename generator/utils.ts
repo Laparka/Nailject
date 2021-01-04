@@ -62,8 +62,8 @@ export function toNamespace(path: string): string {
     }
   }
 
-  if (result.length !== 0 && NUMERIC.findIndex(_ => _ === result[0])) {
-    result[0] = '_';
+  if (result.length !== 0 && result[0] !== '_') {
+    return '_' + result.join('');
   }
 
   return result.join('');
