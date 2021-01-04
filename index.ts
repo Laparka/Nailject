@@ -5,9 +5,9 @@ import * as path from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 
 const parser = new RegistrationsParser();
-async function generate(sourceFilePath: string, registrationClassName: string, outputDirectory: string): Promise<string[]> {
+async function generate(filePath: string, className: string, outputDirectory: string): Promise<string[]> {
   const generatedFiles: string[] = [];
-  const registrations = parser.parse(sourceFilePath, registrationClassName);
+  const registrations = parser.parse(filePath, className);
   const allSymbols: RegistrationSymbol[] = [];
   const namespaces: string[] = [];
   const typeImport: ImportFrom = {
@@ -27,23 +27,26 @@ async function generate(sourceFilePath: string, registrationClassName: string, o
       r.imports.push(typeImport);
     }
 
-    const serviceResolverCode = await liquid.renderFile('generator/templates/transientResolver.liquid', r);
-    let serviceResolverFileName = `${r.scope}Of${r.instance.displayName}Of${r.service.displayName}ServiceResolver.ts`;
-    serviceResolverFileName = serviceResolverFileName[0].toLowerCase() + serviceResolverFileName.substring(1, serviceResolverFileName.length );
-    const serviceResolverPath = path.join(outputDirectory, serviceResolverFileName);
-    writeFileSync(serviceResolverPath, serviceResolverCode, {encoding: 'utf8'});
-    const symbolDescriptor = r.service.symbolDescriptor;
-    if (allSymbols.findIndex(s => s.symbolId === symbolDescriptor.symbolId && s.symbolNamespace == symbolDescriptor.symbolNamespace) === -1) {
-      allSymbols.push(symbolDescriptor);
+    const codeContent = await liquid.renderFile('generator/templates/transientResolver.liquid', r);
+    const prefix = r.scope[0].toLowerCase() + r.scope.substring(1, r.scope.length);
+    const outputFile = [prefix, r.instance.displayName, r.service.displayName, 'ServiceResolver.ts'].join('Of');
+    const outputFilePath = path.join(outputDirectory, outputFile);
+    writeFileSync(outputFilePath, codeContent, {encoding: 'utf8'});
+    generatedFiles.push(outputFilePath);
+    const symbol = r.service.symbolDescriptor;
+    if (allSymbols.findIndex(s => s.symbolId === symbol.symbolId && s.symbolNamespace == symbol.symbolNamespace) === -1) {
+      allSymbols.push(symbol);
     }
 
-    if (namespaces.findIndex(n => n === symbolDescriptor.symbolNamespace) === -1) {
-      namespaces.push(symbolDescriptor.symbolNamespace);
+    if (namespaces.findIndex(n => n === symbol.symbolNamespace) === -1) {
+      namespaces.push(symbol.symbolNamespace);
     }
   }
 
-  const symbolTypesCode = await liquid.renderFile('generator/templates/symbolTypes.liquid', {namespaces: namespaces, symbols: allSymbols});
-  writeFileSync(path.join(outputDirectory, 'types.generated.ts'), symbolTypesCode, {encoding: 'utf8'});
+  const codeContent = await liquid.renderFile('generator/templates/symbolTypes.liquid', {namespaces: namespaces, symbols: allSymbols});
+  const typesFilePath = path.join(outputDirectory, 'types.generated.ts');
+  writeFileSync(typesFilePath, codeContent, {encoding: 'utf8'});
+  generatedFiles.push(typesFilePath);
   return generatedFiles;
 }
 
