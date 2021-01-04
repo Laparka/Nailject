@@ -1,12 +1,5 @@
-import RegistrationsParser from '../generator/registrationsParser';
+import generate from '../index';
 
 test("Must Generate Module Service Resolvers", () => {
-  const generator = new RegistrationsParser();
-  const resolvers = generator.parse('./__tests__/module.ts', 'Module');
-  resolvers.forEach(value => {
-    console.log(value);
-    const dependencyTypes = generator.parseDependencies(value.instanceTypeNode);
-    console.log(dependencyTypes);
-  });
-  console.log(resolvers);
+  generate('./__tests__/module.ts', 'Module', '__tests__/.generated/');
 });

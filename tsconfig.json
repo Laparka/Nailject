@@ -3,7 +3,9 @@
     "target": "ES2017",
     "moduleResolution": "Node",
     "allowJs": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "baseUrl": "./",
+    "rootDir": "./"
   },
   "compileOnSave": false,
   "include": ["bin", "generator", "api", "services", "index.ts"],

@@ -1,6 +1,6 @@
 import { Node } from 'typescript';
 import { NodeVisitor } from './nodeVisitor';
-import { GeneratorContext, NodeResult } from '../generatorContext';
+import { GeneratorContext } from '../generatorContext';
 import SyntaxListVisitor from './syntaxListVisitor';
 import ImportDeclarationVisitor from './importDeclarationVisitor';
 import ImportClauseVisitor from './importClauseVisitor';
@@ -54,7 +54,7 @@ export default class AnyNodeVisitor implements NodeVisitor {
     return true;
   }
 
-  visit(node: Node, context: GeneratorContext): NodeResult | void {
+  visit(node: Node, context: GeneratorContext): any | void {
     for(let i = 0; i < this._visitors.length; i++) {
       if (this._visitors[i].canVisit(node)) {
         return this._visitors[i].visit(node, context);

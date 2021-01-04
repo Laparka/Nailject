@@ -1,6 +1,6 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { ClassDeclaration, Node, SyntaxKind } from 'typescript';
-import { GeneratorContext } from '../generatorContext';
+import { CodeAccessor, GeneratorContext } from '../generatorContext';
 
 export default class ClassDeclarationVisitor extends NodeVisitorBase<ClassDeclaration> {
   canVisit(node: Node): boolean {
@@ -17,12 +17,12 @@ export default class ClassDeclarationVisitor extends NodeVisitorBase<ClassDeclar
     if (!node.name) {
       return;
     }
-    const classNameTokens = this.visitNext(node.name, context);
-    if (!classNameTokens) {
+    const classNameCodeAccessor = this.visitNext(node.name, context) as CodeAccessor;
+    if (!classNameCodeAccessor || !classNameCodeAccessor.name) {
       throw Error("The class name is not defined");
     }
 
-    if (context.instanceName !== classNameTokens.name) {
+    if (context.instanceName !== classNameCodeAccessor.name) {
       return;
     }
 
@@ -33,8 +33,8 @@ export default class ClassDeclarationVisitor extends NodeVisitorBase<ClassDeclar
 
       let implementRegistration = false;
       for(let i = 0; i < node.heritageClauses.length; i++) {
-        const inheritsTokens = this.visitNext(node.heritageClauses[i], context);
-        if (inheritsTokens) {
+        const inheritCodeAccessor = this.visitNext(node.heritageClauses[i], context) as CodeAccessor;
+        if (inheritCodeAccessor && inheritCodeAccessor.name) {
           implementRegistration = true;
           break;
         }

@@ -1,24 +1,29 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { ImportClause, Node, SyntaxKind } from 'typescript';
-import { GeneratorContext, NodeResult } from '../generatorContext';
+import { GeneratorContext, CodeAccessor, ImportFrom } from '../generatorContext';
 
 export default class ImportClauseVisitor extends NodeVisitorBase<ImportClause> {
   canVisit(node: Node): boolean {
     return node.kind === SyntaxKind.ImportClause;
   }
 
-  doVisit(node: ImportClause, context: GeneratorContext): NodeResult {
+  doVisit(node: ImportClause, context: GeneratorContext): ImportFrom[] {
     if (node.name) {
-      const nameResult = this.visitNext(node.name, context);
-      if (!nameResult) {
-        throw Error("The ImportClause name must contain only 1 element");
+      const nameResult = this.visitNext(node.name, context) as CodeAccessor;
+      if (!nameResult || !nameResult.name) {
+        throw Error("Failed to parse the import clause name token");
       }
 
-      return nameResult;
+      return [{
+        path: '',
+        kind: 'Default',
+        alias: nameResult.name,
+        name: nameResult.name
+      }];
     }
 
     if (node.namedBindings) {
-      const bindingResult = this.visitNext(node.namedBindings, context);
+      const bindingResult = this.visitNext(node.namedBindings, context) as ImportFrom[];
       if (!bindingResult) {
         throw Error(`Failed to parse the import named bindings`);
       }

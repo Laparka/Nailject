@@ -1,27 +1,27 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { Node, SyntaxKind, TypeReferenceNode } from 'typescript';
-import { GeneratorContext, NodeResult } from '../generatorContext';
+import { GeneratorContext, CodeAccessor } from '../generatorContext';
 
 export default class TypeReferenceVisitor extends NodeVisitorBase<TypeReferenceNode> {
   canVisit(node: Node): boolean {
     return node.kind === SyntaxKind.TypeReference;
   }
 
-  doVisit(node: TypeReferenceNode, context: GeneratorContext): NodeResult {
-    const genericArgs: NodeResult[] = [];
+  doVisit(node: TypeReferenceNode, context: GeneratorContext): CodeAccessor {
+    const genericArgs: CodeAccessor[] = [];
     if (node.typeArguments) {
       for (let i = 0; i < node.typeArguments.length; i++) {
-        const genericTypeTokens = this.visitNext(node.typeArguments[i], context);
-        if (!genericTypeTokens) {
+        const genericTypeAccessor = this.visitNext(node.typeArguments[i], context) as CodeAccessor;
+        if (!genericTypeAccessor || !genericTypeAccessor.name) {
           throw Error(`Failed to parse the type's generic arguments`);
         }
 
-        genericArgs.push(genericTypeTokens);
+        genericArgs.push(genericTypeAccessor);
       }
     }
 
-    const accessorTokens = this.visitNext(node.typeName, context);
-    if (!accessorTokens) {
+    const accessorTokens = this.visitNext(node.typeName, context) as CodeAccessor;
+    if (!accessorTokens || !accessorTokens.name) {
       throw Error(`Failed to parse the type reference name`);
     }
 

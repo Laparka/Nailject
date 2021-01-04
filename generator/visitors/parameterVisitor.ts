@@ -1,14 +1,15 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { Node, ParameterDeclaration, SyntaxKind } from 'typescript';
-import { GeneratorContext, ImportType, NodeResult } from '../generatorContext';
-import { addUsedImports, tryFindImportType } from '../utils';
+import { GeneratorContext, ImportFrom, CodeAccessor } from '../generatorContext';
+import { addUsedImports, getAccessorDeclaration, getSymbolName, toNamespace, tryFindImportType } from '../utils';
+import * as path from 'path';
 
 export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclaration> {
   canVisit(node: Node): boolean {
     return node.kind === SyntaxKind.Parameter;
   }
 
-  doVisit(node: ParameterDeclaration, context: GeneratorContext): NodeResult {
+  doVisit(node: ParameterDeclaration, context: GeneratorContext): CodeAccessor {
     if (context.mode === 'Module') {
       return this.getRegisterArgType(node, context);
     }
@@ -20,7 +21,7 @@ export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclarati
     throw Error(`The parameter declaration is not supported`)
   }
 
-  private getRegisterArgType(node: ParameterDeclaration, context: GeneratorContext): NodeResult {
+  private getRegisterArgType(node: ParameterDeclaration, context: GeneratorContext): CodeAccessor {
     if (!node.type) {
       throw Error(`The register-method argument parameter type is required`);
     }
@@ -55,29 +56,34 @@ export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclarati
     };
   }
 
-  private getConstructorArgType(node: ParameterDeclaration, context: GeneratorContext): NodeResult {
+  private getConstructorArgType(node: ParameterDeclaration, context: GeneratorContext): CodeAccessor {
     if (!node.type) {
       throw Error(`The constructor argument ${node.name} has no type defined`);
     }
 
-    const argType = this.visitNext(node.type, context);
-    if (!argType) {
+    const parameterAccessor = this.visitNext(node.type, context) as CodeAccessor;
+    if (!parameterAccessor || !parameterAccessor.name) {
       throw Error(`Failed to find the constructor argument type`);
     }
 
-    const usedImports: ImportType[] = [];
-    const argImport = addUsedImports(argType, context.imports, usedImports)
-    context.resolvers.push({
-      instanceTypeNode: {
-        type: argType,
-        path: argImport
+    const usedImports: ImportFrom[] = [];
+    const importType = addUsedImports(parameterAccessor, context.imports, usedImports)
+    context.registrations.push({
+      service: {
+        accessor: parameterAccessor,
+        importFrom: importType,
+        displayName: getSymbolName(parameterAccessor, context.imports),
+        symbolDescriptor: {
+          symbolId: getSymbolName(parameterAccessor, usedImports),
+          symbolNamespace: importType ? toNamespace(path.parse(importType.path).dir) : ''
+        },
+        accessorDeclaration: getAccessorDeclaration(parameterAccessor, context.imports)
       },
-      scope: 'Transient',
-      typeSymbolNode: argType,
-      imports: context.imports,
-      serviceTypeNode: argType
-    })
+      instance: null,
+      imports: null,
+      scope: 'Transient'
+    });
 
-    return argType;
+    return parameterAccessor;
   }
 }

@@ -1,12 +1,15 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { CallExpression, Node, SyntaxKind } from 'typescript';
 import {
+  CodeAccessor,
   GeneratorContext,
-  ImportType,
-  ServiceResolverDeclaration,
+  ImportFrom,
+  InstanceDescriptor,
+  RegistrationDescriptor,
+  ServiceDescriptor,
 } from '../generatorContext';
 import { LifetimeScope } from '../../api/containerBuilder';
-import { addUsedImports, getSymbolName, toNamespace } from '../utils';
+import { addUsedImports, getAccessorDeclaration, getSymbolName, toNamespace } from '../utils';
 import * as path from 'path';
 
 export default class CallExpressionVisitor extends NodeVisitorBase<CallExpression> {
@@ -19,22 +22,22 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       return;
     }
 
-    const methodCallTokens = this.visitNext(node.expression, context);
-    if (!methodCallTokens) {
+    const methodCallAccessor = this.visitNext(node.expression, context) as CodeAccessor;
+    if (!methodCallAccessor) {
       return;
     }
 
-    const instanceName = methodCallTokens.name;
+    const instanceName = methodCallAccessor.name;
     if (instanceName !== context.instanceName) {
       return;
     }
 
-    if (!methodCallTokens.child) {
+    if (!methodCallAccessor.child) {
       return;
     }
 
     let scope: LifetimeScope;
-    switch (methodCallTokens.child.name) {
+    switch (methodCallAccessor.child.name) {
       case 'addSingleton': {
         scope = 'Singleton';
         break;
@@ -46,44 +49,47 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       }
 
       default: {
-        throw new Error(`Not supported registration-method ${methodCallTokens.child.name}`);
+        throw new Error(`Not supported registration-method ${methodCallAccessor.child.name}`);
       }
     }
 
-    const serviceTypeNode = this.visitNext(node.typeArguments[0], context);
-    if (!serviceTypeNode) {
-      throw Error(`No service type argument is defined for the ${methodCallTokens.child.name}-method`)
+    const serviceCodeAccessor = this.visitNext(node.typeArguments[0], context) as CodeAccessor;
+    if (!serviceCodeAccessor || !serviceCodeAccessor.name) {
+      throw Error(`No service type argument is defined for the ${methodCallAccessor.child.name}-method`)
     }
 
-    const usedImports: ImportType[] = [];
-    const serviceImport = addUsedImports(serviceTypeNode, context.imports, usedImports);
-    const instanceTypeNode = this.visitNext(node.typeArguments[1], context);
-    if (!instanceTypeNode) {
-      throw Error(`No instance type argument is defined for the ${methodCallTokens.child.name}-method`)
+    const usedImports: ImportFrom[] = [];
+    const instanceCodeAccessor = this.visitNext(node.typeArguments[1], context) as CodeAccessor;
+    if (!instanceCodeAccessor || !instanceCodeAccessor.name) {
+      throw Error(`No instance type argument is defined for the ${methodCallAccessor.child.name}-method`)
     }
 
-    const instanceImport = addUsedImports(instanceTypeNode, context.imports, usedImports);
-    if (!instanceImport) {
-      throw Error(`The instance class must be exportable and located outside of the registration module`)
-    }
-
-    const resolverDeclaration: ServiceResolverDeclaration = {
-      scope: scope,
-      imports: usedImports,
-      instanceTypeNode: {
-        type: instanceTypeNode,
-        path: instanceImport
+    const serviceImport = addUsedImports(serviceCodeAccessor, context.imports, usedImports);
+    const serviceDescriptor: ServiceDescriptor = {
+      symbolDescriptor: {
+        symbolId: getSymbolName(serviceCodeAccessor, usedImports),
+        symbolNamespace: serviceImport ? toNamespace(path.parse(serviceImport.path).dir) : ''
       },
-      serviceTypeNode: {
-        type: serviceTypeNode,
-        path: serviceImport
-      },
-      registrationSymbol: {
-        symbolNamespace: toNamespace(path.parse(serviceImport.path).dir),
-        symbolId: getSymbolName(serviceTypeNode, usedImports)
-      }
+      importFrom: serviceImport,
+      displayName: getSymbolName(serviceCodeAccessor, usedImports),
+      accessorDeclaration: getAccessorDeclaration(serviceCodeAccessor, usedImports),
+      accessor: serviceCodeAccessor
     };
 
-    context.resolvers.push(resolverDeclaration);
+    const instanceDescriptor: InstanceDescriptor = {
+      accessor: instanceCodeAccessor,
+      constructorArgs: [],
+      accessorDeclaration: getAccessorDeclaration(instanceCodeAccessor, usedImports),
+      displayName: getSymbolName(instanceCodeAccessor, usedImports),
+      importFrom: addUsedImports(instanceCodeAccessor, context.imports, usedImports)
+    };
+    const registrationDescriptor: RegistrationDescriptor = {
+      scope: scope,
+      imports: usedImports,
+      instance: instanceDescriptor,
+      service: serviceDescriptor
+    };
+
+    context.registrations.push(registrationDescriptor);
   }
 }

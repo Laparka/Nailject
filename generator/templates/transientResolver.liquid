@@ -1,0 +1,35 @@
+{% for import in imports %}
+    {% if import.kind == 'Named' %}
+        {% if import.name == import.alias %}
+import { {{ import.name }} } from '{{ import.path }}';
+        {% else %}
+import { {{ import.name }} as {{ import.alias }} } from '{{ import.path }}';
+        {% endif %}
+    {%  elsif import.kind == 'Namespace'%}
+import * as {{ import.alias }} from '{{ import.path }}';
+    {%  elsif import.kind == 'Default'%}
+import {{ import.name }} from '{{ import.path }}';
+    {% endif %}
+{% endfor %}
+
+export default class {{instance.displayName}}Of{{ service.displayName }}{{ scope }}ServiceResolver extends {{ scope }}ServiceResolver<{{service.accessorDeclaration}}> {
+    doResolve(serviceProvider: ServiceProvider): {{service.accessorDeclaration}} {
+        const ctor: InstanceConstructor<{{ instance.accessorDeclaration }}> = {{ instance.accessorDeclaration }};
+{% for ctorSymbol in instance.constructorArgs %}
+    {% if instanceArg.isCollection == true %}
+        const service{{ forloop.index }} = serviceProvider.resolveMany({{ instanceArg.symbolPath }});
+    {% else %}
+        const service{{ forloop.index }} = serviceProvider.resolveOne({{ instanceArg.symbolPath }});
+    {% endif %}
+{% endfor %}
+        return new ctor(
+{%- if instance.constructorArgs.size != 0 -%}
+    {%- for arg in (0..instance.constructorArgs.size) -%}
+service{{ arg }}
+    {%- if forloop.index < instance.constructorArgs.size -%}
+,
+    {%- endif-%}
+    {%- endfor -%}
+{%- endif -%});
+    }
+}

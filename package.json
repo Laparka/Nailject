@@ -24,12 +24,13 @@
     "node": "^10.12.0 || >=12.0.0"
   },
   "dependencies": {
-    "typescript": "^4.0.5",
-    "@types/node": "^14.14.8",
     "commander": "^6.2.1",
-    "fs": "0.0.1-security"
+    "fs": "0.0.1-security",
+    "liquidjs": "^9.19.0"
   },
   "devDependencies": {
+    "typescript": "^4.0.5",
+    "@types/node": "^14.14.8",
     "@types/jest": "^26.0.15",
     "@typescript-eslint/eslint-plugin": "^4.11.1",
     "@typescript-eslint/parser": "^4.11.1",

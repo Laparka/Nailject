@@ -1,6 +1,6 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { HeritageClause, Node, SyntaxKind } from 'typescript';
-import { GeneratorContext, ImportType, NodeResult } from '../generatorContext';
+import { GeneratorContext, CodeAccessor, ImportFrom } from '../generatorContext';
 import { getLastPropertyAccessor, tryFindImportType } from '../utils';
 
 export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClause> {
@@ -8,25 +8,25 @@ export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClaus
     return node.kind === SyntaxKind.HeritageClause;
   }
 
-  doVisit(node: HeritageClause, context: GeneratorContext): NodeResult | void {
+  doVisit(node: HeritageClause, context: GeneratorContext): CodeAccessor | void {
     if (node.token !== SyntaxKind.ImplementsKeyword || node.modifiers) {
       return;
     }
 
     for(let i = 0; i < node.types.length; i++) {
       const type = node.types[i];
-      const typeTokens = this.visitNext(type, context);
-      if (!typeTokens) {
+      const typeCodeAccessor = this.visitNext(type, context) as CodeAccessor;
+      if (!typeCodeAccessor || !typeCodeAccessor.name) {
         throw Error(`Invalid inheritance type`);
       }
 
-      if (HeritageClauseVisitor.hasImport(typeTokens.name, context.imports) && getLastPropertyAccessor(typeTokens) === 'DependenciesRegistration') {
-        return typeTokens;
+      if (HeritageClauseVisitor.hasImport(typeCodeAccessor.name, context.imports) && getLastPropertyAccessor(typeCodeAccessor) === 'DependenciesRegistration') {
+        return typeCodeAccessor;
       }
     }
   }
 
-  private static hasImport(name: string, imports: ImportType[]): boolean {
+  private static hasImport(name: string, imports: ImportFrom[]): boolean {
     return !!tryFindImportType(name, imports);
   }
 }
