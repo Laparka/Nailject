@@ -25,7 +25,9 @@ export default class {{instance.displayName}}Of{{ service.displayName }}{{ scope
         return new ctor(
 {%- if instance.constructorArgs.size != 0 -%}
     {%- for arg in (0..instance.constructorArgs.size) -%}
+        {%- if arg != 0 -%}
 service{{ arg }}
+        {%- endif -%}
     {%- if forloop.index < instance.constructorArgs.size -%}
 ,
     {%- endif-%}
