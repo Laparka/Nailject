@@ -1,7 +1,6 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { ImportDeclaration, Node, SyntaxKind } from 'typescript';
 import { CodeAccessor, GeneratorContext, ImportFrom } from '../generatorContext';
-import * as path from 'path';
 
 export default class ImportDeclarationVisitor extends NodeVisitorBase<ImportDeclaration> {
   canVisit(node: Node): boolean {
@@ -23,17 +22,8 @@ export default class ImportDeclarationVisitor extends NodeVisitorBase<ImportDecl
       throw Error("ImportDeclaration From-path must be the only one in the list");
     }
 
-    let importPath = pathSpecifier.name;
-    if (importPath.length !== 0 && importPath[0] === '.') {
-      const moduleDir = path.parse(context.modulePath).dir;
-      importPath = path.join(moduleDir, importPath).replace(/\\/g, '/');
-      if (importPath.length !== 0 && importPath[0] !== '.') {
-        importPath = './' + importPath;
-      }
-    }
-
     importClause.forEach(i => {
-      i.path = importPath;
+      i.path = pathSpecifier.name;
       context.imports.push(i);
     });
   }

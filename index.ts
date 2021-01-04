@@ -12,7 +12,7 @@ async function generate(sourceFilePath: string, registrationClassName: string, o
   const namespaces: string[] = [];
   const typeImport: ImportFrom = {
     name: '*',
-    alias: '__service_type_symbols',
+    alias: '__SERVICE_TYPE_SYMBOLS',
     kind: 'Namespace',
     path: path.join(outputDirectory, 'types.generated').replace(/[\\]/g, '/')
   };

@@ -39,6 +39,7 @@ export type InstanceDescriptor = {
   accessorDeclaration: string;
   importFrom: ImportFrom;
   accessor: CodeAccessor;
+  constructorType: string;
   constructorArgs: ConstructorArgumentDescriptor[];
 };
 

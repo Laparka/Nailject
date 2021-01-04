@@ -3,7 +3,7 @@ import Monitor from "../interfaces/monitor";
 
 export default class ConsoleLogger implements Logger {
     private readonly _monitors: Monitor<ConsoleLogger>[];
-    constructor(monitors: Monitor<ConsoleLogger>[]) {
+    constructor(monitors: Monitor<ConsoleLogger>[], anotherMonitor: Monitor<any>) {
         this._monitors = monitors;
     }
 

@@ -81,7 +81,8 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       constructorArgs: [],
       accessorDeclaration: getAccessorDeclaration(instanceCodeAccessor, usedImports),
       displayName: getSymbolName(instanceCodeAccessor, usedImports),
-      importFrom: addUsedImports(instanceCodeAccessor, context.imports, usedImports)
+      importFrom: addUsedImports(instanceCodeAccessor, context.imports, usedImports),
+      constructorType: CallExpressionVisitor.getConstructorType(instanceCodeAccessor, usedImports)
     };
     const registrationDescriptor: RegistrationDescriptor = {
       scope: scope,
@@ -91,5 +92,20 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
     };
 
     context.registrations.push(registrationDescriptor);
+  }
+
+  private static getConstructorType(codeAccessor: CodeAccessor, imports: ImportFrom[]) {
+    let name = codeAccessor.name;
+    if (name === '[]') {
+      if (codeAccessor.child) {
+        return `${CallExpressionVisitor.getConstructorType(codeAccessor.child, imports)}[]`;
+      }
+    }
+
+    if (codeAccessor.child) {
+      name = `${name}.${CallExpressionVisitor.getConstructorType(codeAccessor.child, imports)}`;
+    }
+
+    return name;
   }
 }

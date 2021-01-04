@@ -109,3 +109,4 @@ package-lock.json
 *.js
 *.d.ts
 !jest.config.js
+__tests__/.generated/
