@@ -1,5 +1,5 @@
 {
-  "name": "nailject",
+  "name": "tsinjector",
   "version": "0.0.1",
   "description": "The TypeScript-only Dependency Injection Library based on generated Service Locators for each registered service",
   "scripts": {
@@ -7,12 +7,13 @@
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint",
-    "start": "node bin/nailject.js"
+    "start": "tsc & node bin/tsinjector.js ./__tests__/module.ts Module ./__tests__/.generated/"
   },
   "main": "index.js",
   "bin": {
-    "nailject": "bin/nailject.js"
+    "tsinjector": "bin/tsinjector.js"
   },
+  "type": "commonjs",
   "keywords": [
     "dependency injection",
     "ioc",

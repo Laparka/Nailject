@@ -24,7 +24,7 @@ function generate(filePath: string, className: string, outputDirectory: string):
   const liquid = new Liquid();
   for (const r of registrations) {
     const imports: ImportFrom[] = [];
-    for(const i of r.imports) {
+    for(const i of r.imports!) {
       const copiedImport: ImportFrom = {
         isExternal: i.isExternal,
         relativePath: i.relativePath,
@@ -45,7 +45,7 @@ function generate(filePath: string, className: string, outputDirectory: string):
 
     r.imports = imports;
     const resolverCode = liquid.renderFileSync('generator/templates/resolver.liquid', r);
-    const resolverName = [r.instance.displayName, r.service.displayName, r.scope, 'ServiceResolver'].join('Of');
+    const resolverName = [r.instance!.displayName, r.service.displayName, r.scope, 'ServiceResolver'].join('Of');
     const outputFile = resolverName[0].toLowerCase() + resolverName.substring(1, resolverName.length);
     writeFileSync(path.join(outputDirectory, `${outputFile}.ts`), resolverCode, {encoding: 'utf8'});
     const symbol = r.service.symbolDescriptor;

@@ -29,7 +29,7 @@ export default class RegistrationsParser {
 
   private fillDependencies(moduleDir: string, registrations: RegistrationDescriptor[]): void {
     for(const registration of registrations) {
-      if (!registration.instance.importFrom) {
+      if (!registration.instance || !registration.instance.importFrom) {
         continue;
       }
 
@@ -61,7 +61,7 @@ export default class RegistrationsParser {
           ctorArgDescriptor.symbolPath = `${ctorArg.service.symbolDescriptor.symbolNamespace}.${ctorArgDescriptor.symbolPath}`;
         }
 
-        registration.instance.constructorArgs.push(ctorArgDescriptor);
+        registration.instance!.constructorArgs.push(ctorArgDescriptor);
       });
     }
   }

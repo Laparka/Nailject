@@ -1,15 +1,22 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "declaration": true,
+    "strict": true,
+    "types": [
+      "jest",
+      "node"
+    ],
     "allowJs": true,
     "noUnusedLocals": true,
     "baseUrl": "./",
     "paths": {
-      "@pileuple/*": [ "*" ]
+      "@tsinjector/*": [ "*" ]
     }
   },
   "compileOnSave": false,
-  "include": ["bin", "generator", "api", "services", "index.ts"],
+  "include": ["bin/*", "generator/*", "api/*", "index.ts"],
   "exclude": ["node_modules", "**/__tests__/*"]
 }

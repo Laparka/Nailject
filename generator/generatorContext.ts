@@ -27,7 +27,7 @@ export type ServiceDescriptor = {
   displayName: string;
   accessorDeclaration: string;
   symbolDescriptor: RegistrationSymbol;
-  importFrom: ImportFrom;
+  importFrom: ImportFrom | null;
   accessor: CodeAccessor;
 };
 
@@ -39,7 +39,7 @@ export type ConstructorArgumentDescriptor = {
 export type InstanceDescriptor = {
   displayName: string;
   accessorDeclaration: string;
-  importFrom: ImportFrom;
+  importFrom: ImportFrom | null;
   accessor: CodeAccessor;
   constructorType: string;
   constructorArgs: ConstructorArgumentDescriptor[];
@@ -47,9 +47,9 @@ export type InstanceDescriptor = {
 
 export type RegistrationDescriptor = {
   scope: LifetimeScope;
-  imports: ImportFrom[];
+  imports: ImportFrom[] | null;
   service: ServiceDescriptor;
-  instance: InstanceDescriptor;
+  instance: InstanceDescriptor | null;
 };
 
 export type GeneratorContext = {

@@ -94,7 +94,7 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
     context.registrations.push(registrationDescriptor);
   }
 
-  private static getConstructorType(codeAccessor: CodeAccessor, imports: ImportFrom[]) {
+  private static getConstructorType(codeAccessor: CodeAccessor, imports: ImportFrom[]): string {
     let name = codeAccessor.name;
     if (name === '[]') {
       if (codeAccessor.child) {
