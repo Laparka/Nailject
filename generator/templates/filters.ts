@@ -31,7 +31,7 @@ export function toImportFilter(this: FilterImpl, importFrom: ImportFrom, outputD
 
 export function toSymbolPath(this: FilterImpl, symbolDescriptor: RegistrationSymbol): string {
   const symbolPath: string[] = [];
-  if (symbolDescriptor.symbolNamespace) {
+  if (symbolDescriptor.symbolNamespace.length !== 0) {
     symbolPath.push(symbolDescriptor.symbolNamespace);
   }
 

@@ -1,9 +1,11 @@
 # TypeScript Dependency Injection
+This is my learning project.
+Detects container builder registrations and generated service resolvers with a IoC container.
+The IoC Container then used to resolve services by symbols.
 
+## Register your dependencies
 
-## Generate Service Resolvers
-
-### Example
+### Project Structure Example
 ```
 src/
 ├── services/
@@ -12,7 +14,22 @@ src/
 └── registrations.ts
 ```
 
-### services/logger.ts file content
+### src/registration.ts file content
+```typescript
+import { Logger, ConsoleLoggerImpl } from "./services/logger";
+import { ApiService, DebugApiServiceImpl } from "./services/apiService";
+import { ContainerBuilder } from 'iocgenerator/api/containerBuilder';
+import { DependenciesRegistration } from 'iocgenerator/api/dependenciesRegistration';
+
+export class Registrations implements DependenciesRegistration {
+    register(containerBuilder: ContainerBuilder): void {
+        containerBuilder.addTransient<Logger, ConsoleLoggerImpl>();
+        containerBuilder.addSingleton<ApiService, DebugApiServiceImpl>();
+    }
+}
+```
+
+### src/services/logger.ts file content
 
 ```typescript
 export interface Logger {
@@ -36,7 +53,7 @@ export class ConsoleLoggerImpl implements Logger {
 }
 ```
 
-### services/apiService.ts file content
+### src/services/apiService.ts file content
 
 ```typescript
 import { Logger } from './logger';
@@ -73,21 +90,68 @@ export class DebugApiServiceImpl implements ApiService {
 }
 ```
 
-### registration.ts file content
-```typescript
-import { Logger, ConsoleLoggerImpl } from "./logger";
-import { ApiService, DebugApiServiceImpl } from "./apiService";
-import { ContainerBuilder } from 'iocgenerator/api/containerBuilder';
-import { DependenciesRegistration } from 'iocgenerator/api/dependenciesRegistration';
-
-export class Registrations implements DependenciesRegistration {
-    register(containerBuilder: ContainerBuilder): void {
-        containerBuilder.addTransient<Logger, ConsoleLoggerImpl>();
-        containerBuilder.addSingleton<ApiService, DebugApiServiceImpl>();
-    }
-}
-```
-
+#### Run the following command
 >
 >`npm run iocgenerator -- ./registrations.ts --moduleName Registrations --outputDir ./services/__generated/`
 
+Please note, that there is -- after the iocgenerator statement. This is my first TypeScript NodeJS project
+
+### Check the generated files with your outputDir
+```
+src/
+├── services/
+│   ├── __generated/
+│   │    ├── consoleLoggerImplOfLoggerTransientServiceResolver.ts
+│   │    ├── debugApiServiceImplOfApiServiceSingletonServiceResolver.ts
+│   │    ├── index.ts
+│   │    └── types.generated.ts
+│   │
+│   ├── logger.ts
+│   └── apiService.ts
+└── registrations.ts
+```
+
+### Example of generated content of the ApiServiceResolver
+```typescript
+import { ApiService as ApiService } from '../apiService';
+import { DebugApiServiceImpl as DebugApiServiceImpl } from '../apiService';
+
+import { TYPES as __SERVICE_TYPE_SYMBOLS } from './types.generated';
+import { SingletonServiceResolver, InstanceConstructor, ServiceResolver } from 'iocgenerator/api/serviceResolver';
+import { ServiceProvider } from 'iocgenerator/api/serviceProvider';
+
+class Resolver extends SingletonServiceResolver<ApiService> {
+    doResolve(serviceProvider: ServiceProvider): ApiService {
+        const ctor: InstanceConstructor<DebugApiServiceImpl> = DebugApiServiceImpl;
+        const ctorArgs: any[] = [];
+        ctorArgs.push(serviceProvider.resolveOne(__SERVICE_TYPE_SYMBOLS._srcserviceslogger.Logger));
+        return new ctor(...ctorArgs);
+    }
+}
+
+export function register(resolvers: Map<symbol, ServiceResolver[]>) {
+    const symbol = __SERVICE_TYPE_SYMBOLS._srcservicesapiService.ApiService;
+    let symbolResolvers = resolvers.get(symbol);
+    if (!symbolResolvers) {
+        symbolResolvers = [];
+        resolvers.set(symbol, symbolResolvers);
+    }
+
+    symbolResolvers.push(new Resolver());
+}
+```
+
+The main file, which contains the IoC Service Provider is in the index.ts:
+```typescript
+import { register as register1 } from './consoleLoggerImplOfLoggerTransientServiceResolver';
+import { register as register2 } from './debugApiServiceImplOfApiServiceSingletonServiceResolver';
+
+import { ServiceProvider, CompiledServiceProvider } from 'iocgenerator/api/serviceProvider';
+import { ServiceResolver } from 'iocgenerator/api/serviceResolver';
+
+const symbolResolvers = new Map<symbol, ServiceResolver[]>();
+
+register1(symbolResolvers);
+register2(symbolResolvers);
+export const serviceProvider: ServiceProvider = CompiledServiceProvider.initialize(symbolResolvers);
+```

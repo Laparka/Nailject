@@ -1,6 +1,6 @@
 import { ImportFrom, CodeAccessor } from './generatorContext';
 
-const ALPHA = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','Q','R','S','T','U','V','W','X','Y','Z','_'];
+const ALPHA = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o', 'p', 'q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O', 'P', 'Q','R','S','T','U','V','W','X','Y','Z','_'];
 const NUMERIC = ['1','2','3','4','5','6','7','8','9','0'];
 
 export function getLastPropertyAccessor(node: CodeAccessor): string {
@@ -62,7 +62,7 @@ export function toNamespace(path: string): string {
     }
   }
 
-  if (result.length !== 0 && result[0] !== '_') {
+  if (result.length === 0 || result[0] !== '_') {
     return '_' + result.join('');
   }
 

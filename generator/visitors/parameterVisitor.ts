@@ -2,7 +2,7 @@ import { NodeVisitorBase } from './nodeVisitor';
 import { Node, ParameterDeclaration, SyntaxKind } from 'typescript';
 import { GeneratorContext, ImportFrom, CodeAccessor } from '../generatorContext';
 import { addUsedImports, getAccessorDeclaration, getSymbolName, toNamespace, tryFindImportType } from '../utils';
-import * as path from 'path';
+import { getFullPath } from '../templates/filters';
 
 export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclaration> {
   canVisit(node: Node): boolean {
@@ -68,6 +68,11 @@ export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclarati
 
     const usedImports: ImportFrom[] = [];
     const importType = addUsedImports(parameterAccessor, context.imports, usedImports)
+    let symbolNamespace = "";
+    if (importType) {
+      symbolNamespace = toNamespace(getFullPath(importType.relativePath, importType.path));
+    }
+
     context.registrations.push({
       service: {
         accessor: parameterAccessor,
@@ -75,7 +80,7 @@ export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclarati
         displayName: getSymbolName(parameterAccessor, context.imports),
         symbolDescriptor: {
           symbolId: getSymbolName(parameterAccessor, usedImports),
-          symbolNamespace: importType ? toNamespace(path.parse(importType.path).dir) : ''
+          symbolNamespace: symbolNamespace
         },
         accessorDeclaration: getAccessorDeclaration(parameterAccessor, context.imports)
       },

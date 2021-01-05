@@ -10,7 +10,7 @@ import {
 } from '../generatorContext';
 import { LifetimeScope } from '../../api/containerBuilder';
 import { addUsedImports, getAccessorDeclaration, getSymbolName, toNamespace } from '../utils';
-import * as path from 'path';
+import { getFullPath } from '../templates/filters';
 
 export default class CallExpressionVisitor extends NodeVisitorBase<CallExpression> {
   canVisit(node: Node): boolean {
@@ -65,10 +65,14 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
     }
 
     const serviceImport = addUsedImports(serviceCodeAccessor, context.imports, usedImports);
+    let serviceNamespace = "";
+    if (serviceImport) {
+      serviceNamespace = toNamespace(getFullPath(serviceImport.relativePath, serviceImport.path));
+    }
     const serviceDescriptor: ServiceDescriptor = {
       symbolDescriptor: {
         symbolId: getSymbolName(serviceCodeAccessor, usedImports),
-        symbolNamespace: serviceImport ? toNamespace(path.parse(serviceImport.path).dir) : ''
+        symbolNamespace: serviceNamespace
       },
       importFrom: serviceImport,
       displayName: getSymbolName(serviceCodeAccessor, usedImports),
