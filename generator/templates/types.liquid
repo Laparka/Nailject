@@ -1,0 +1,16 @@
+export const TYPES = {
+{%- for namespace in namespaces -%}
+{% if namespace == "" %}
+    undefined_namespace: {
+{% else %}
+    {{ namespace }}: {
+{%- endif -%}
+    {%- assign namespaceSymbols = symbols | where: "symbolNamespace", namespace -%}
+        {% for symbol in namespaceSymbols %}
+        {{ symbol.symbolId }}: Symbol.for("{{ symbol.symbolId }}")
+        {%- if forloop.index != namespaceSymbols.size -%},{%-endif -%}
+        {% endfor %}
+    }
+    {%- if forloop.index != namespaces.size -%},{%-endif -%}
+{% endfor %}
+}

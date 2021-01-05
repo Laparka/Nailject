@@ -33,7 +33,7 @@ export type ServiceDescriptor = {
 
 export type ConstructorArgumentDescriptor = {
   isCollection: boolean;
-  symbolPath: string;
+  symbolDescriptor: RegistrationSymbol;
 };
 
 export type InstanceDescriptor = {
@@ -41,7 +41,7 @@ export type InstanceDescriptor = {
   accessorDeclaration: string;
   importFrom: ImportFrom | null;
   accessor: CodeAccessor;
-  constructorType: string;
+  instanceTypeDefinition: string;
   constructorArgs: ConstructorArgumentDescriptor[];
 };
 

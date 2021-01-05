@@ -1,50 +1,27 @@
 import RegistrationsParser from './generator/registrationsParser';
-import { ImportFrom, RegistrationSymbol } from './generator/generatorContext';
+import { RegistrationSymbol } from './generator/generatorContext';
 import { Liquid } from 'liquidjs'
 import * as path from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { toImportFilter, toSymbolPath } from './generator/templates/filters';
+import { resolverTemplate, serviceProviderTemplate, symbolsTemplate } from './generator/templates';
 
-type ResolverName = {
-  fileName: string;
-  className: string;
-  symbol: RegistrationSymbol;
-};
+const liquid = new Liquid();
+liquid.registerFilter('toImport', toImportFilter);
+liquid.registerFilter('toSymbolPath', toSymbolPath);
 
 const parser = new RegistrationsParser();
 function generate(filePath: string, className: string, outputDirectory: string): string[] {
   const registrations = parser.parse(filePath, className);
   const allSymbols: RegistrationSymbol[] = [];
   const namespaces: string[] = [];
-  const resolvers: ResolverName[] = [];
-
+  const resolvers: string[] = [];
   if (!existsSync(outputDirectory)) {
     mkdirSync(outputDirectory, { recursive: true });
   }
 
-  const liquid = new Liquid();
   for (const r of registrations) {
-    const imports: ImportFrom[] = [];
-    for(const i of r.imports!) {
-      const copiedImport: ImportFrom = {
-        isExternal: i.isExternal,
-        relativePath: i.relativePath,
-        path: i.path,
-        name: i.name,
-        alias: i.alias,
-        kind: i.kind
-      };
-
-      if (!i.isExternal) {
-        const importPath = path.join(i.relativePath, i.path)
-        copiedImport.path = path.relative(outputDirectory, importPath).replace(/[\\]/g, '/');
-        copiedImport.relativePath = outputDirectory;
-      }
-
-      imports.push(copiedImport);
-    }
-
-    r.imports = imports;
-    const resolverCode = liquid.renderFileSync('generator/templates/resolver.liquid', r);
+    const resolverCode = liquid.parseAndRenderSync(resolverTemplate, {registration: r, outputDir: outputDirectory});
     const resolverName = [r.instance!.displayName, r.service.displayName, r.scope, 'ServiceResolver'].join('Of');
     const outputFile = resolverName[0].toLowerCase() + resolverName.substring(1, resolverName.length);
     writeFileSync(path.join(outputDirectory, `${outputFile}.ts`), resolverCode, {encoding: 'utf8'});
@@ -57,21 +34,17 @@ function generate(filePath: string, className: string, outputDirectory: string):
       namespaces.push(symbol.symbolNamespace);
     }
 
-    resolvers.push({
-      fileName: outputFile,
-      className: resolverName,
-      symbol: symbol
-    });
+    resolvers.push(outputFile);
   }
 
-  const symbolsCode = liquid.renderFileSync('generator/templates/symbolTypes.liquid', {namespaces, symbols: allSymbols});
+  const symbolsCode = liquid.parseAndRenderSync(symbolsTemplate, {namespaces, symbols: allSymbols});
   const typesFilePath = path.join(outputDirectory, 'types.generated.ts');
   writeFileSync(typesFilePath, symbolsCode, {encoding: 'utf8'});
 
-  const indexCode = liquid.renderFileSync('generator/templates/index.liquid', { symbols: allSymbols, resolvers: resolvers });
+  const indexCode = liquid.parseAndRenderSync(serviceProviderTemplate, { resolvers: resolvers });
   const indexFilePath = path.join(outputDirectory, 'index.ts');
   writeFileSync(indexFilePath, indexCode, {encoding: 'utf8'});
-  return resolvers.map(r => `${r.fileName}.ts`);
+  return resolvers;
 }
 
 export default generate;

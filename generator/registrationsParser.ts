@@ -54,12 +54,8 @@ export default class RegistrationsParser {
       dependencies.forEach(ctorArg => {
         const ctorArgDescriptor: ConstructorArgumentDescriptor = {
           isCollection: ctorArg.service.accessor.name === '[]',
-          symbolPath: ctorArg.service.symbolDescriptor.symbolId
+          symbolDescriptor: ctorArg.service.symbolDescriptor
         };
-
-        if (ctorArg.service.symbolDescriptor.symbolNamespace && ctorArg.service.symbolDescriptor.symbolNamespace.length !== 0) {
-          ctorArgDescriptor.symbolPath = `${ctorArg.service.symbolDescriptor.symbolNamespace}.${ctorArgDescriptor.symbolPath}`;
-        }
 
         registration.instance!.constructorArgs.push(ctorArgDescriptor);
       });

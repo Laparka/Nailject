@@ -1,5 +1,4 @@
 import { ServiceResolver } from './serviceResolver';
-import ServiceResolversRegistry from './serviceResolversRegistry';
 
 export interface ServiceProvider {
   resolveMany<TService>(serviceId: symbol): TService[];
@@ -11,16 +10,28 @@ export interface ServiceScopeProvider {
   getTransientServiceProvider(): ServiceProvider;
 }
 
-export class CompiledServiceProvider implements ServiceProvider, ServiceScopeProvider, ServiceResolversRegistry {
-  private static readonly _SingletonServiceProvider: ServiceProvider = new CompiledServiceProvider();
-  private static readonly _ServiceResolversMap: Map<symbol, ServiceResolver[]> = new Map<symbol, ServiceResolver[]>();
+export class CompiledServiceProvider implements ServiceProvider, ServiceScopeProvider {
+  private static _SingletonServiceProvider: ServiceProvider;
+  private readonly _serviceResolversMap: Map<symbol, ServiceResolver[]>;
+
+  private constructor(serviceResolvers: Map<symbol, ServiceResolver[]>) {
+    this._serviceResolversMap = serviceResolvers;
+  }
+
+  static initialize(serviceResolvers: Map<symbol, ServiceResolver[]>): ServiceProvider {
+    if (!CompiledServiceProvider._SingletonServiceProvider) {
+      CompiledServiceProvider._SingletonServiceProvider = new CompiledServiceProvider(serviceResolvers);
+    }
+
+    return CompiledServiceProvider._SingletonServiceProvider;
+  }
 
   getSingletonServiceProvider(): ServiceProvider {
     return CompiledServiceProvider._SingletonServiceProvider;
   }
 
   getTransientServiceProvider(): ServiceProvider {
-    return new CompiledServiceProvider();
+    return new CompiledServiceProvider(this._serviceResolversMap);
   }
 
   resolveOne<TService>(serviceTypeId: symbol): TService {
@@ -29,13 +40,13 @@ export class CompiledServiceProvider implements ServiceProvider, ServiceScopePro
   }
 
   resolveMany<TService>(serviceTypeId: symbol): TService[] {
-    const serviceResolvers = CompiledServiceProvider._ServiceResolversMap.get(serviceTypeId);
+    const serviceResolvers = this._serviceResolversMap.get(serviceTypeId);
     if (!serviceResolvers) {
       throw Error(`Failed to find service resolvers for the serviceID ${Symbol.keyFor(serviceTypeId)}`);
     }
 
     const instances: TService[] = [];
-    for(const resolver of serviceResolvers) {
+    for (const resolver of serviceResolvers) {
       instances.push(resolver.resolve(this));
     }
 
@@ -44,23 +55,5 @@ export class CompiledServiceProvider implements ServiceProvider, ServiceScopePro
     }
 
     return instances;
-  }
-
-  registerResolver(serviceTypeId: symbol, serviceResolver: ServiceResolver): void {
-    if (!serviceTypeId) {
-      throw Error('Service Type ID is required')
-    }
-
-    if (!serviceResolver) {
-      throw Error('Service Resolver instance is required')
-    }
-
-    let resolvers = CompiledServiceProvider._ServiceResolversMap.get(serviceTypeId);
-    if (!resolvers) {
-      resolvers = [];
-      CompiledServiceProvider._ServiceResolversMap.set(serviceTypeId, resolvers);
-    }
-
-    resolvers.push(serviceResolver);
   }
 }
