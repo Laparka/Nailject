@@ -5,15 +5,16 @@ import { CommanderStatic } from 'commander';
 import generate from '../';
 
 const program: CommanderStatic = commander;
-program
-  .usage('<filename> <moduleName> <outputDir> [options]')
+const usage = program
+  .usage('<filename> [options]')
+  .option('--moduleName <moduleName>', 'The class name that implements DependenciesRegistration interface name')
+  .option('--outputDir <outputDir>', 'The output directory where the script writes all the generated files')
   .parse(process.argv);
 
-const options = {
-  filename: program.args[0],
-  moduleName: program.args[1],
-  outputDir: program.args[2]
-};
-console.log(`Launched via CLI: ${JSON.stringify(options)}`);
+console.log(usage.opts());
+const options: any = usage.opts();
+const fileName = usage.parse(process.argv).args[0];
 
-generate(options.filename, 'Module', options.outputDir);
+console.log(`Launched via CLI: ${fileName} ${JSON.stringify(options)}`);
+
+console.log(generate(fileName, options.moduleName, options.outputDir));

@@ -22,7 +22,7 @@ function generate(filePath: string, className: string, outputDirectory: string):
 
   for (const r of registrations) {
     const resolverCode = liquid.parseAndRenderSync(resolverTemplate, {registration: r, outputDir: outputDirectory});
-    const resolverName = [r.instance!.displayName, r.service.displayName, r.scope, 'ServiceResolver'].join('Of');
+    const resolverName = [r.instance!.displayName, r.service.displayName].join('Of') + `${r.scope}ServiceResolver`;
     const outputFile = resolverName[0].toLowerCase() + resolverName.substring(1, resolverName.length);
     writeFileSync(path.join(outputDirectory, `${outputFile}.ts`), resolverCode, {encoding: 'utf8'});
     const symbol = r.service.symbolDescriptor;

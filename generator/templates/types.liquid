@@ -7,7 +7,7 @@ export const TYPES = {
 {%- endif -%}
     {%- assign namespaceSymbols = symbols | where: "symbolNamespace", namespace -%}
         {% for symbol in namespaceSymbols %}
-        {{ symbol.symbolId }}: Symbol.for("{{ symbol.symbolId }}")
+        {{ symbol.symbolId }}: Symbol.for("{{ namespace }}.{{ symbol.symbolId }}")
         {%- if forloop.index != namespaceSymbols.size -%},{%-endif -%}
         {% endfor %}
     }

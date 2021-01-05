@@ -47,7 +47,7 @@ export const symbolsTemplate = 'export const TYPES = {\n' +
   '{%- endif -%}\n' +
   '    {%- assign namespaceSymbols = symbols | where: "symbolNamespace", namespace -%}\n' +
   '        {% for symbol in namespaceSymbols %}\n' +
-  '        {{ symbol.symbolId }}: Symbol.for("{{ symbol.symbolId }}")\n' +
+  '        {{ symbol.symbolId }}: Symbol.for("{{ namespace }}.{{ symbol.symbolId }}")\n' +
   '        {%- if forloop.index != namespaceSymbols.size -%},{%-endif -%}\n' +
   '        {% endfor %}\n' +
   '    }\n' +

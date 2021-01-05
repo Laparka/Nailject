@@ -7,7 +7,7 @@
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint",
-    "start": "tsc & node bin/tsinjector.js ./__tests__/module.ts Module ./__tests__/.generated/"
+    "start": "tsc & node bin/tsinjector.js ./__tests__/module.ts --moduleName Module --outputDir ./__tests__/.generated/"
   },
   "main": "index.js",
   "bin": {
