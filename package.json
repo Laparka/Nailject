@@ -1,25 +1,25 @@
 {
-  "name": "tsinjector",
+  "name": "iocgenerator",
   "version": "1.0.0",
   "description": "The TypeScript-only Dependency Injection Library based on generated Service Locators for each registered service",
-  "homepage": "https://github.com/Laparka/tsinjector",
+  "homepage": "https://github.com/Laparka/iocgenerator",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Laparka/tsinjector.git"
+    "url": "git+https://github.com/Laparka/iocgenerator.git"
   },
   "bugs": {
-    "url": "https://github.com/Laparka/tsinjector/issues"
+    "url": "https://github.com/Laparka/iocgenerator/issues"
   },
   "scripts": {
     "test": "jest --watch",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint",
-    "start": "tsc & node bin/tsinjector.js ./__tests__/module.ts --moduleName Module --outputDir ./__tests__/.generated/"
+    "start": "tsc & node bin/iocgenerator.js ./__tests__/module.ts --moduleName Module --outputDir ./__tests__/.generated/"
   },
   "main": "index.js",
   "bin": {
-    "tsinjector": "bin/tsinjector.js"
+    "iocgenerator": "bin/iocgenerator.js"
   },
   "type": "commonjs",
   "keywords": [
@@ -27,7 +27,7 @@
     "ioc",
     "service locator"
   ],
-  "author": "<laparka.shops@gmail.com> Marat Sultangareev",
+  "author": " <laparka.shops@gmail.com>",
   "license": "ISC",
   "engines": {
     "node": "^10.12.0 || >=12.0.0"

@@ -77,8 +77,8 @@ export class DebugApiServiceImpl implements ApiService {
 ```typescript
 import { Logger, ConsoleLoggerImpl } from "./logger";
 import { ApiService, DebugApiServiceImpl } from "./apiService";
-import { ContainerBuilder } from 'tsinjector/api/containerBuilder';
-import { DependenciesRegistration } from 'tsinjector/api/dependenciesRegistration';
+import { ContainerBuilder } from 'iocgenerator/api/containerBuilder';
+import { DependenciesRegistration } from 'iocgenerator/api/dependenciesRegistration';
 
 export class Registrations implements DependenciesRegistration {
     register(containerBuilder: ContainerBuilder): void {
@@ -89,5 +89,5 @@ export class Registrations implements DependenciesRegistration {
 ```
 
 >
->`npm run tsinjector -- ./registrations.ts --moduleName Registrations --outputDir ./services/__generated/`
+>`npm run iocgenerator -- ./registrations.ts --moduleName Registrations --outputDir ./services/__generated/`
 
