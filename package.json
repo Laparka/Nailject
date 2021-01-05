@@ -1,7 +1,15 @@
 {
   "name": "tsinjector",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "The TypeScript-only Dependency Injection Library based on generated Service Locators for each registered service",
+  "homepage": "https://github.com/Laparka/tsinjector",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Laparka/tsinjector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Laparka/tsinjector/issues"
+  },
   "scripts": {
     "test": "jest --watch",
     "build": "tsc",
@@ -19,7 +27,7 @@
     "ioc",
     "service locator"
   ],
-  "author": "Marat Sultangareev",
+  "author": "<laparka.shops@gmail.com> Marat Sultangareev",
   "license": "ISC",
   "engines": {
     "node": "^10.12.0 || >=12.0.0"
