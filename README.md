@@ -1,3 +1,4 @@
+#  Ulutshaizing and Documentation In Progress 
 # TypeScript Dependency Injection
 This is my learning project.
 Detects container builder registrations and generated service resolvers with a IoC container.
@@ -154,4 +155,16 @@ const symbolResolvers = new Map<symbol, ServiceResolver[]>();
 register1(symbolResolvers);
 register2(symbolResolvers);
 export const serviceProvider: ServiceProvider = CompiledServiceProvider.initialize(symbolResolvers);
+```
+
+### Usage
+```typescript
+import {serviceProvider} from "./src/services/__generated";
+import {ApiService} from "./src/services/apiService";
+import {TYPES} from "./src/services/__generated/types.generated";
+
+const apiService = serviceProvider.resolveOne<ApiService>(TYPES._srcservicesapiService.ApiService);
+export function call() {
+console.log(apiService.get('/api/v1/test', new Map<string, string>()));
+}
 ```

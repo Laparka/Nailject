@@ -1,6 +1,6 @@
 {
   "name": "iocgenerator",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "The TypeScript-only Dependency Injection Library based on generated Service Locators for each registered service",
   "homepage": "https://github.com/Laparka/iocgenerator",
   "repository": {
