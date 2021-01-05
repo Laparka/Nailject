@@ -13,8 +13,7 @@ export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClaus
       return;
     }
 
-    for(let i = 0; i < node.types.length; i++) {
-      const type = node.types[i];
+    for(const type of node.types) {
       const typeCodeAccessor = this.visitNext(type, context) as CodeAccessor;
       if (!typeCodeAccessor || !typeCodeAccessor.name) {
         throw Error(`Invalid inheritance type`);

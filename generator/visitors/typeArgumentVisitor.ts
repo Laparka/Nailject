@@ -10,8 +10,8 @@ export default class TypeArgumentVisitor extends NodeVisitorBase<ExpressionWithT
   doVisit(node: ExpressionWithTypeArguments, context: GeneratorContext): CodeAccessor | void {
     const genericArgs: CodeAccessor[] = [];
     if (node.typeArguments) {
-      for(let i = 0; i < node.typeArguments.length; i++) {
-        const genericTypeArgAccessor = this.visitNext(node.typeArguments[i], context) as CodeAccessor;
+      for(const typeArg of node.typeArguments) {
+        const genericTypeArgAccessor = this.visitNext(typeArg, context) as CodeAccessor;
         if (!genericTypeArgAccessor || !genericTypeArgAccessor.name) {
           throw Error(`Failed to generate Generic Type Arguments`);
         }

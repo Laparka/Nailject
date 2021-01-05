@@ -9,7 +9,6 @@ export default class ConsoleLogger implements Logger {
 
     log(message: string): void {
         this._monitors.forEach(x => x.onBeforeCall());
-        console.log(message);
         this._monitors.forEach(x => x.onAfterCall());
     }
 }

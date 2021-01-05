@@ -26,8 +26,8 @@ export default class MethodDeclarationVisitor extends NodeVisitorBase<MethodDecl
       return;
     }
 
-    for (let i = 0; i < node.body.statements.length; i++) {
-      this.visitNext(node.body.statements[i], context);
+    for (const bodyStatement of node.body.statements) {
+      this.visitNext(bodyStatement, context);
     }
   }
 }

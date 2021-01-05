@@ -1,5 +1,5 @@
-import ServiceResolversRegistry from './serviceResolversRegistry';
 import { ServiceResolver } from './serviceResolver';
+import ServiceResolversRegistry from './serviceResolversRegistry';
 
 export interface ServiceProvider {
   resolveMany<TService>(serviceId: symbol): TService[];
@@ -35,8 +35,8 @@ export class CompiledServiceProvider implements ServiceProvider, ServiceScopePro
     }
 
     const instances: TService[] = [];
-    for(let i = 0; i < serviceResolvers.length; i++) {
-      instances.push(serviceResolvers[i].resolve(this));
+    for(const resolver of serviceResolvers) {
+      instances.push(resolver.resolve(this));
     }
 
     if (instances.length === 0) {

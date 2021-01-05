@@ -23,18 +23,17 @@ export default class RegistrationsParser {
       imports: []
     });
 
-    this.fillDependencies(registrations);
+    this.fillDependencies(path.parse(registrationFilePath).dir, registrations);
     return registrations;
   }
 
-  private fillDependencies(registrations: RegistrationDescriptor[]): void {
-    for(let i = 0; i < registrations.length; i++) {
-      const registrationDescriptor = registrations[i];
-      if (!registrationDescriptor.instance.importFrom) {
+  private fillDependencies(moduleDir: string, registrations: RegistrationDescriptor[]): void {
+    for(const registration of registrations) {
+      if (!registration.instance.importFrom) {
         continue;
       }
 
-      const filePath = `${registrationDescriptor.instance.importFrom.path}.ts`;
+      const filePath = `${path.join(moduleDir, registration.instance.importFrom.path)}.ts`;
       if (!existsSync(path.normalize(filePath))) {
         continue;
       }
@@ -42,7 +41,7 @@ export default class RegistrationsParser {
       const dependencies: RegistrationDescriptor[] = [];
       this._visitor.visit(RegistrationsParser.getSyntax(filePath), {
         modulePath: filePath,
-        instanceName: getLastPropertyAccessor(registrationDescriptor.instance.accessor),
+        instanceName: getLastPropertyAccessor(registration.instance.accessor),
         mode: 'Dependent',
         registrations: dependencies,
         imports: []
@@ -62,7 +61,7 @@ export default class RegistrationsParser {
           ctorArgDescriptor.symbolPath = `${ctorArg.service.symbolDescriptor.symbolNamespace}.${ctorArgDescriptor.symbolPath}`;
         }
 
-        registrationDescriptor.instance.constructorArgs.push(ctorArgDescriptor);
+        registration.instance.constructorArgs.push(ctorArgDescriptor);
       });
     }
   }

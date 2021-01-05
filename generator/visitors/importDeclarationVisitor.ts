@@ -29,7 +29,7 @@ export default class ImportDeclarationVisitor extends NodeVisitorBase<ImportDecl
     const isExternal = pathSpecifier.name[0] !== '.' && pathSpecifier.name[0] !== '/'
       || !existsSync(importPath);
     importClause.forEach(i => {
-      i.isExternal = isExternal,
+      i.isExternal = isExternal;
       i.path = pathSpecifier.name;
       context.imports.push(i);
     });

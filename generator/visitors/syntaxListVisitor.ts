@@ -9,8 +9,7 @@ export default class SyntaxListVisitor extends NodeVisitorBase<SyntaxList> {
 
   doVisit(node: SyntaxList, context: GeneratorContext): void {
     const children = node.getChildren();
-    for(let i = 0; i < children.length; i++) {
-      const child = children[i];
+    for(const child of children) {
       this.visitNext(child, context);
     }
   }

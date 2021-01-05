@@ -5,9 +5,8 @@
     "allowJs": true,
     "noUnusedLocals": true,
     "baseUrl": "./",
-    "rootDir": "./",
     "paths": {
-      "nailject/*": [ "*" ]
+      "@pileuple/*": [ "*" ]
     }
   },
   "compileOnSave": false,

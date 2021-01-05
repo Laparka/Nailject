@@ -12,8 +12,8 @@ export default class ConstructorVisitor extends NodeVisitorBase<ConstructorDecla
       return;
     }
 
-    for(let i = 0; i < node.parameters.length; i++) {
-      this.visitNext(node.parameters[i], context);
+    for(const parameter of node.parameters) {
+      this.visitNext(parameter, context);
     }
   }
 }

@@ -1,8 +1,6 @@
 import { ServiceProvider, ServiceScopeProvider } from './serviceProvider';
 
-export type InstanceConstructor<T> = {
-  new (...args: any[]): T;
-};
+export type InstanceConstructor<T> = new (...args: any[]) => T;
 
 export interface ServiceResolver {
   resolve(scopeProvider: ServiceScopeProvider): any;

@@ -1,6 +1,7 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { ImportClause, Node, SyntaxKind } from 'typescript';
 import { GeneratorContext, CodeAccessor, ImportFrom } from '../generatorContext';
+import * as path from 'path';
 
 export default class ImportClauseVisitor extends NodeVisitorBase<ImportClause> {
   canVisit(node: Node): boolean {
@@ -19,7 +20,8 @@ export default class ImportClauseVisitor extends NodeVisitorBase<ImportClause> {
         kind: 'Default',
         alias: nameResult.name,
         name: nameResult.name,
-        isExternal: false
+        isExternal: false,
+        relativePath: path.parse(context.modulePath).dir
       }];
     }
 

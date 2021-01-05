@@ -55,9 +55,9 @@ export default class AnyNodeVisitor implements NodeVisitor {
   }
 
   visit(node: Node, context: GeneratorContext): any | void {
-    for(let i = 0; i < this._visitors.length; i++) {
-      if (this._visitors[i].canVisit(node)) {
-        return this._visitors[i].visit(node, context);
+    for(const visitor of this._visitors) {
+      if (visitor.canVisit(node)) {
+        return visitor.visit(node, context);
       }
     }
   }

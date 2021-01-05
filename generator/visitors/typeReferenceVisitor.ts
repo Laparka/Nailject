@@ -10,8 +10,8 @@ export default class TypeReferenceVisitor extends NodeVisitorBase<TypeReferenceN
   doVisit(node: TypeReferenceNode, context: GeneratorContext): CodeAccessor {
     const genericArgs: CodeAccessor[] = [];
     if (node.typeArguments) {
-      for (let i = 0; i < node.typeArguments.length; i++) {
-        const genericTypeAccessor = this.visitNext(node.typeArguments[i], context) as CodeAccessor;
+      for (const typeArg of node.typeArguments) {
+        const genericTypeAccessor = this.visitNext(typeArg, context) as CodeAccessor;
         if (!genericTypeAccessor || !genericTypeAccessor.name) {
           throw Error(`Failed to parse the type's generic arguments`);
         }

@@ -1,6 +1,7 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { NamedImports, Node, SyntaxKind } from 'typescript';
 import { CodeAccessor, GeneratorContext, ImportFrom } from '../generatorContext';
+import * as path from 'path';
 
 export default class NamedImportVisitor extends NodeVisitorBase<NamedImports> {
   canVisit(node: Node): boolean {
@@ -9,8 +10,8 @@ export default class NamedImportVisitor extends NodeVisitorBase<NamedImports> {
 
   doVisit(node: NamedImports, context: GeneratorContext): ImportFrom[] {
     const specifiers: ImportFrom[] = [];
-    for (let i = 0; i < node.elements.length; i++) {
-      const importSpecifierAccessor = this.visitNext(node.elements[i], context) as CodeAccessor;
+    for (const element of node.elements) {
+      const importSpecifierAccessor = this.visitNext(element, context) as CodeAccessor;
       if (!importSpecifierAccessor || !importSpecifierAccessor.name) {
         throw Error("Named import specifier is empty");
       }
@@ -20,7 +21,8 @@ export default class NamedImportVisitor extends NodeVisitorBase<NamedImports> {
         path: '',
         isExternal: false,
         name: importSpecifierAccessor.name,
-        alias: importSpecifierAccessor.child ? importSpecifierAccessor.child.name : importSpecifierAccessor.name
+        alias: importSpecifierAccessor.child ? importSpecifierAccessor.child.name : importSpecifierAccessor.name,
+        relativePath: path.parse(context.modulePath).dir
       });
     }
 

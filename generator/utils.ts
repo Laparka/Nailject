@@ -35,8 +35,8 @@ export function addUsedImports(node: CodeAccessor, imports: ImportFrom[], usedIm
   }
 
   if (node.typeNames) {
-    for (let i = 0; i < node.typeNames.length; i++) {
-      addUsedImports(node.typeNames[i], imports, usedImports);
+    for (const typeName of node.typeNames) {
+      addUsedImports(typeName, imports, usedImports);
     }
   }
 
@@ -56,9 +56,9 @@ export function tryFindImportType(importName: string, imports: ImportFrom[]): Im
 
 export function toNamespace(path: string): string {
   const result: string[] = [];
-  for(let i = 0; i < path.length; i++) {
-    if (ALPHA.findIndex(_ => _ === path[i]) >= 0 || NUMERIC.findIndex(_ => _ === path[i]) >= 0) {
-      result.push(path[i]);
+  for(const ch of path) {
+    if (ALPHA.findIndex(_ => _ === ch) >= 0 || NUMERIC.findIndex(_ => _ === ch) >= 0) {
+      result.push(ch);
     }
   }
 

@@ -32,8 +32,8 @@ export default class ClassDeclarationVisitor extends NodeVisitorBase<ClassDeclar
       }
 
       let implementRegistration = false;
-      for(let i = 0; i < node.heritageClauses.length; i++) {
-        const inheritCodeAccessor = this.visitNext(node.heritageClauses[i], context) as CodeAccessor;
+      for(const heritageClause of node.heritageClauses) {
+        const inheritCodeAccessor = this.visitNext(heritageClause, context) as CodeAccessor;
         if (inheritCodeAccessor && inheritCodeAccessor.name) {
           implementRegistration = true;
           break;
@@ -48,8 +48,8 @@ export default class ClassDeclarationVisitor extends NodeVisitorBase<ClassDeclar
       return;
     }
 
-    for(let i = 0; i < node.members.length; i++) {
-      this.visitNext(node.members[i], context)
+    for(const member of node.members) {
+      this.visitNext(member, context)
     }
   }
 
