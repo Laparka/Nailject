@@ -1,7 +1,7 @@
 {
   "name": "pileuple",
-  "version": "0.0.8",
-  "description": "Compile-time IoC and Dependency Injection Framework library for TypeScript.",
+  "version": "0.0.9",
+  "description": "TypeScript Compile-time IoC and Dependency Injection library.",
   "homepage": "https://github.com/Laparka/pileuple",
   "repository": {
     "type": "git",
