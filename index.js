@@ -27,6 +27,10 @@ const liquidjs_1 = require("liquidjs");
 const path = __importStar(require("path"));
 const fs_1 = require("fs");
 const filters_1 = require("./generator/templates/filters");
+const templateDir = path.join(__dirname, 'generator', 'templates');
+const resolverTemplatePath = path.join(templateDir, 'resolver.liquid');
+const symbolTypesTemplatePath = path.join(templateDir, 'types.liquid');
+const serviceProviderTemplatePath = path.join(templateDir, 'serviceProvider.liquid');
 const liquid = new liquidjs_1.Liquid();
 liquid.registerFilter('toImport', filters_1.toImportFilter);
 liquid.registerFilter('toSymbolPath', filters_1.toSymbolPath);
@@ -39,8 +43,9 @@ function generate(filePath, className, outputDirectory) {
     if (!fs_1.existsSync(outputDirectory)) {
         fs_1.mkdirSync(outputDirectory, { recursive: true });
     }
+    console.log(resolverTemplatePath);
     for (const r of registrations) {
-        const resolverCode = liquid.renderFileSync('./generator/templates/resolver.liquid', { registration: r, outputDir: outputDirectory });
+        const resolverCode = liquid.renderFileSync(resolverTemplatePath, { registration: r, outputDir: outputDirectory });
         const resolverName = [r.instance.displayName, r.service.displayName].join('Of') + `${r.scope}ServiceResolver`;
         const outputFile = resolverName[0].toLowerCase() + resolverName.substring(1, resolverName.length);
         fs_1.writeFileSync(path.join(outputDirectory, `${outputFile}.ts`), resolverCode, { encoding: 'utf8' });
@@ -55,10 +60,10 @@ function generate(filePath, className, outputDirectory) {
         }
         resolvers.push(outputFile);
     }
-    const symbolsCode = liquid.renderFileSync('./generator/templates/types.liquid', { namespaces, symbols: allSymbols });
+    const symbolsCode = liquid.renderFileSync(symbolTypesTemplatePath, { namespaces, symbols: allSymbols });
     const typesFilePath = path.join(outputDirectory, 'types.generated.ts');
     fs_1.writeFileSync(typesFilePath, symbolsCode, { encoding: 'utf8' });
-    const indexCode = liquid.renderFileSync('./generator/templates/serviceProvider.liquid', { resolvers: resolvers });
+    const indexCode = liquid.renderFileSync(serviceProviderTemplatePath, { resolvers: resolvers });
     const indexFilePath = path.join(outputDirectory, 'index.ts');
     fs_1.writeFileSync(indexFilePath, indexCode, { encoding: 'utf8' });
     return resolvers;
