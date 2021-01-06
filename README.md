@@ -1,8 +1,8 @@
-#Overview
+# Overview
 PileUple is an IoC framework library, which generates Service Resolvers and an IoC container TypeScript code. The library is using the TypeScript parser to build and analyze the AST of your source code.
 There are a lot of IoC libraries implemented for TypeScript. Most of these libraries are clones that use reflect-metadata and experimental decorators. The strategy of that approach is to register services and their dependencies in runtime. But since TypeScript is a transpiler, it's already a "reflector" for us.
 
-#Basic Usage
+# Basic Usage
 >Project Structure Example
 >```
 >src/
@@ -11,7 +11,7 @@ There are a lot of IoC libraries implemented for TypeScript. Most of these libra
 >│   └── apiService.ts
 >└── registrations.ts
 >```
-##1) Implement Registrations
+## 1) Implement Registrations
 First, you need to write a registration class to provide dependencies.
 
 >Note that your code MUST export the registration class.
@@ -32,7 +32,7 @@ First, you need to write a registration class to provide dependencies.
 >    }
 >}
 >```
-##2) Run the PileUple Code-generator
+## 2) Run the PileUple Code-generator
    When you are done, run the PileUple code-generator and provide the required parameters:
    The first argument is the path to your registrations file
    The moduleName required option is the registration-class name
@@ -40,7 +40,7 @@ First, you need to write a registration class to provide dependencies.
 ```
 npm run pileuple ./src/registrations.ts --moduleName Registrations --outputDir ./src/services/__generated/
 ```
-##3) Verify the generated files
+## 3) Verify the generated files
 The code-generator then creates:
 1. One Service Resolver class per service registration
 2. One Type-file with service resolving symbol-types
