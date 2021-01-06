@@ -1,5 +1,5 @@
 # Overview
-PileUple is a Compile-time IoC framework library, which generates Service Resolvers and an IoC container for TypeScript code. The library is using the TypeScript parser to build and analyze the AST of your source code.
+PileUple is a Compile-time IoC library, which generates Service Resolvers and an IoC container for TypeScript code. The library is using the TypeScript parser to build and analyze the AST of your source code.
 There are a lot of IoC libraries implemented for TypeScript. Most of these libraries are clones that use reflect-metadata and experimental decorators. The strategy of that approach is to register services and their dependencies in runtime. But since TypeScript is a transpiler, it's already a "reflector" for us.
 
 # Basic Usage
@@ -14,7 +14,7 @@ There are a lot of IoC libraries implemented for TypeScript. Most of these libra
 ## 1) Implement Registrations
 First, you need to write a registration class to provide dependencies.
 
->Note that your code MUST export the registration class.
+>:warning: Note that your code MUST export the registration class.
 >The registration class MUST implement the DependenciesRegistration interface and all registrations must be done in the register-method by calling the ContainerBuilder-instance.
 > Also, don't define dependency-classes within the registration file, since the code-parser can't see any other classes within the registration class file
 
@@ -33,13 +33,15 @@ First, you need to write a registration class to provide dependencies.
 >}
 >```
 ## 2) Run the PileUple Code-generator
-   When you are done, run the PileUple code-generator and provide the required parameters:
-   The first argument is the path to your registrations file
-   The moduleName required option is the registration-class name
-   The outputDir required option is where to put the generated files
 ```
 npm run pileuple ./src/registrations.ts --moduleName Registrations --outputDir ./src/services/__generated/
 ```
+
+When you are done, run the PileUple code-generator and provide the required parameters:
+* The first argument (`./src/registrations.ts`) is the path to your registrations file
+* The **moduleName** (`Registrations`) required option is the registration-class name
+* The **outputDir** (`./src/services/__generated/`) required option is where to put the generated files
+
 ## 3) Verify the generated files
 The code-generator then creates:
 1. One Service Resolver class per service registration
