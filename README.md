@@ -1,176 +1,108 @@
-#  Ulutshaizing and Documentation In Progress 
-# TypeScript Dependency Injection Library
-This is my learning project.
-The library helps to avoid manual class initializations. You just provide the registrations and run the library against the registration class.
-The library analyzes the registration class in the file and creates service resolvers and the IoC Service Provider.
-This is a basic implementation for my needs. If the library will be useful for the others, I will make it more configurable and with all other features.
+#Overview
+PileUple is an IoC framework library, which generates Service Resolvers and an IoC container TypeScript code. The library is using the TypeScript parser to build and analyze the AST of your source code.
+There are a lot of IoC libraries implemented for TypeScript. Most of these libraries are clones that use reflect-metadata and experimental decorators. The strategy of that approach is to register services and their dependencies in runtime. But since TypeScript is a transpiler, it's already a "reflector" for us.
 
-# How this library is different compared to all others DI libraries for TypeScript?
-* Doesn't require experimental decorators
-* Doesn't require the reflect-metadata library
-* No runtime dynamic - everything is determined.
+#Basic Usage
+>Project Structure Example
+>```
+>src/
+>├── services/
+>│   ├── logger.ts
+>│   └── apiService.ts
+>└── registrations.ts
+>```
+##1) Implement Registrations
+First, you need to write a registration class to provide dependencies.
 
-## Register your dependencies
+>Note that your code MUST export the registration class.
+>The registration class MUST implement the DependenciesRegistration interface and all registrations must be done in the register-method by calling the ContainerBuilder-instance.
+> Also, don't define dependency-classes within the registration file, since the code-parser can't see any other classes within the registration class file
 
-### Project Structure Example
-```
-src/
-├── services/
-│   ├── logger.ts
-│   └── apiService.ts
-└── registrations.ts
-```
-
-### src/registration.ts file content
-```typescript
-import { Logger, ConsoleLoggerImpl } from "./services/logger";
-import { ApiService, DebugApiServiceImpl } from "./services/apiService";
-import { ContainerBuilder } from 'pileuple/api/containerBuilder';
-import { DependenciesRegistration } from 'pileuple/api/dependenciesRegistration';
-
-export class Registrations implements DependenciesRegistration {
-    register(containerBuilder: ContainerBuilder): void {
-        containerBuilder.addTransient<Logger, ConsoleLoggerImpl>();
-        containerBuilder.addSingleton<ApiService, DebugApiServiceImpl>();
-    }
-}
-```
-
-### src/services/logger.ts file content
-
-```typescript
-export interface Logger {
-  logError(message: string): void;
-  logInfo(message: string): void;
-  logWarning(message: string): void;
-}
-
-export class ConsoleLoggerImpl implements Logger {
-  logError(message: string) {
-    console.error(message);
-  }
-
-  logInfo(message: string) {
-    console.info(message);
-  }
-
-  logWarning(message: string) {
-    console.warn(message);
-  }
-}
-```
-
-### src/services/apiService.ts file content
-
-```typescript
-import { Logger } from './logger';
-
-export interface ApiService {
-  get(url: string, headers: Map<string, string>): string;
-
-  post(url: string, payload: any, headers: Map<string, string>): string;
-
-  delete(url: string, headers: Map<string, string>): string;
-}
-
-export class DebugApiServiceImpl implements ApiService {
-  private _logger: Logger;
-
-  constructor(logger: Logger) {
-    this._logger = logger;
-  }
-
-  delete(url: string, headers: Map<string, string>): string {
-    this._logger.logInfo(`DELETE HTTP Request was sent to ${url}`);
-    return '{}';
-  }
-
-  get(url: string, headers: Map<string, string>): string {
-    this._logger.logInfo(`GET HTTP Request was sent to ${url}`);
-    return '{}';
-  }
-
-  post(url: string, payload: any, headers: Map<string, string>): string {
-    this._logger.logInfo(`POST HTTP Request was sent to ${url} with ${JSON.stringify(payload)}`);
-    return '{}';
-  }
-}
-```
-
-#### Run the following command
+>Code Content of `/src/registrations.ts`
+>```typescript
+>import { Logger, ConsoleLoggerImpl } from "./services/logger";
+>import { ApiService, DebugApiServiceImpl } from "./services/apiService";
+>import { ContainerBuilder } from 'pileuple/api/containerBuilder';
+>import { DependenciesRegistration } from 'pileuple/api/dependenciesRegistration';
 >
->`npm run pileuple -- ./registrations.ts --moduleName Registrations --outputDir ./services/__generated/`
-
-Please note, that there is -- after the pileuple statement. This is my first TypeScript NodeJS project
-
-### Check the generated files with your outputDir
+>export class Registrations implements DependenciesRegistration {
+>    register(containerBuilder: ContainerBuilder): void {
+>        containerBuilder.addTransient<Logger, ConsoleLoggerImpl>();
+>        containerBuilder.addSingleton<ApiService, DebugApiServiceImpl>();
+>    }
+>}
+>```
+##2) Run the PileUple Code-generator
+   When you are done, run the PileUple code-generator and provide the required parameters:
+   The first argument is the path to your registrations file
+   The moduleName required option is the registration-class name
+   The outputDir required option is where to put the generated files
 ```
-src/
-├── services/
-│   ├── __generated/
-│   │    ├── consoleLoggerImplOfLoggerTransientServiceResolver.ts
-│   │    ├── debugApiServiceImplOfApiServiceSingletonServiceResolver.ts
-│   │    ├── index.ts
-│   │    └── types.generated.ts
-│   │
-│   ├── logger.ts
-│   └── apiService.ts
-└── registrations.ts
+npm run pileuple ./src/registrations.ts --moduleName Registrations --outputDir ./src/services/__generated/
 ```
+##3) Verify the generated files
+The code-generator then creates:
+1. One Service Resolver class per service registration
+2. One Type-file with service resolving symbol-types
+3. And one file with IoC ServiceProvider, which handles Lifetime Scopes and service resolvings
 
-### Example of generated content of the ApiServiceResolver
-```typescript
-import { ApiService as ApiService } from '../apiService';
-import { DebugApiServiceImpl as DebugApiServiceImpl } from '../apiService';
+>```
+>src/
+>├── services/
+>│   ├── __generated/
+>│   │    ├── consoleLoggerImplOfLoggerTransientServiceResolver.ts
+>│   │    ├── debugApiServiceImplOfApiServiceSingletonServiceResolver.ts
+>│   │    ├── index.ts
+>│   │    └── types.generated.ts
+>│   │
+>│   ├── logger.ts
+>│   └── apiService.ts
+>└── registrations.ts
+>```
 
-import { TYPES as __SERVICE_TYPE_SYMBOLS } from './types.generated';
-import { SingletonServiceResolver, InstanceConstructor, ServiceResolver } from 'pileuple/api/serviceResolver';
-import { ServiceProvider } from 'pileuple/api/serviceProvider';
+>**debugApiServiceImplOfApiServiceSingletonServiceResolver.ts** - Service Resolver for DebugApiServiceImpl-implementation of ApiService-interface
+>```typescript
+>// Auto-generated file
+>import { ApiService as ApiService } from '../apiService';
+>import { DebugApiServiceImpl as DebugApiServiceImpl } from '../apiService';
+>
+>import { TYPES as __SERVICE_TYPE_SYMBOLS } from './types.generated';
+>import { SingletonServiceResolver, InstanceConstructor, ServiceResolver } from 'pileuple/api/serviceResolver';
+>import { ServiceProvider } from 'pileuple/api/serviceProvider';
+>
+>class Resolver extends SingletonServiceResolver<ApiService> {
+>    doResolve(serviceProvider: ServiceProvider): ApiService {
+>        const ctor: InstanceConstructor<DebugApiServiceImpl> = DebugApiServiceImpl;
+>        const ctorArgs: any[] = [];
+>        ctorArgs.push(serviceProvider.resolveOne(__SERVICE_TYPE_SYMBOLS._srcserviceslogger.Logger));
+>        return new ctor(...ctorArgs);
+>    }
+>}
+>
+>export function register(resolvers: Map<symbol, ServiceResolver[]>) {
+>    const symbol = __SERVICE_TYPE_SYMBOLS._srcservicesapiService.ApiService;
+>    let symbolResolvers = resolvers.get(symbol);
+>    if (!symbolResolvers) {
+>        symbolResolvers = [];
+>        resolvers.set(symbol, symbolResolvers);
+>    }
+>
+>    symbolResolvers.push(new Resolver());
+>}
+>```
 
-class Resolver extends SingletonServiceResolver<ApiService> {
-    doResolve(serviceProvider: ServiceProvider): ApiService {
-        const ctor: InstanceConstructor<DebugApiServiceImpl> = DebugApiServiceImpl;
-        const ctorArgs: any[] = [];
-        ctorArgs.push(serviceProvider.resolveOne(__SERVICE_TYPE_SYMBOLS._srcserviceslogger.Logger));
-        return new ctor(...ctorArgs);
-    }
-}
-
-export function register(resolvers: Map<symbol, ServiceResolver[]>) {
-    const symbol = __SERVICE_TYPE_SYMBOLS._srcservicesapiService.ApiService;
-    let symbolResolvers = resolvers.get(symbol);
-    if (!symbolResolvers) {
-        symbolResolvers = [];
-        resolvers.set(symbol, symbolResolvers);
-    }
-
-    symbolResolvers.push(new Resolver());
-}
-```
-
-The main file, which contains the IoC Service Provider is in the index.ts:
-```typescript
-import { register as register1 } from './consoleLoggerImplOfLoggerTransientServiceResolver';
-import { register as register2 } from './debugApiServiceImplOfApiServiceSingletonServiceResolver';
-
-import { ServiceProvider, CompiledServiceProvider } from 'pileuple/api/serviceProvider';
-import { ServiceResolver } from 'pileuple/api/serviceResolver';
-
-const symbolResolvers = new Map<symbol, ServiceResolver[]>();
-
-register1(symbolResolvers);
-register2(symbolResolvers);
-export const serviceProvider: ServiceProvider = CompiledServiceProvider.initialize(symbolResolvers);
-```
-
-### Usage
-```typescript
-import {serviceProvider} from "./src/services/__generated";
-import {ApiService} from "./src/services/apiService";
-import {TYPES} from "./src/services/__generated/types.generated";
-
-const apiService = serviceProvider.resolveOne<ApiService>(TYPES._srcservicesapiService.ApiService);
-export function call() {
-console.log(apiService.get('/api/v1/test', new Map<string, string>()));
-}
-```
+>**index.ts** - the main file, which contains the IoC Service Provider:
+>```typescript
+>// Auto-generated file
+>import { register as register1 } from './consoleLoggerImplOfLoggerTransientServiceResolver';
+>import { register as register2 } from './debugApiServiceImplOfApiServiceSingletonServiceResolver';
+>
+>import { ServiceProvider, CompiledServiceProvider } from 'pileuple/api/serviceProvider';
+>import { ServiceResolver } from 'pileuple/api/serviceResolver';
+>
+>const symbolResolvers = new Map<symbol, ServiceResolver[]>();
+>
+>register1(symbolResolvers);
+>register2(symbolResolvers);
+>export const serviceProvider: ServiceProvider = CompiledServiceProvider.initialize(symbolResolvers);
+>```
