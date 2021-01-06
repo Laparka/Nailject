@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAccessorDeclaration = exports.getSymbolName = exports.toNamespace = exports.tryFindImportType = exports.addUsedImports = exports.getLastPropertyAccessor = void 0;
+exports.getRelativePath = exports.getFullPath = exports.getAccessorDeclaration = exports.getSymbolName = exports.toNamespace = exports.tryFindImportType = exports.addUsedImports = exports.getLastPropertyAccessor = void 0;
+const path_1 = __importDefault(require("path"));
 const ALPHA = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '_'];
 const NUMERIC = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 function getLastPropertyAccessor(node) {
@@ -25,7 +29,7 @@ function addUsedImports(node, imports, usedImports) {
         }
         usedImports.push(usedImport);
     }
-    if (node.child) {
+    if (!usedImport && node.child) {
         addUsedImports(node.child, imports, usedImports);
     }
     if (node.typeNames) {
@@ -101,3 +105,15 @@ function getAccessorDeclaration(codeAccessor, imports) {
     return `${name}<${genericArgs.join(', ')}>`;
 }
 exports.getAccessorDeclaration = getAccessorDeclaration;
+function getFullPath(basePath, relativePath) {
+    return path_1.default.join(basePath, relativePath).replace(/[\\]/g, '/');
+}
+exports.getFullPath = getFullPath;
+function getRelativePath(outputDir, importFrom) {
+    if (!importFrom.isExternal) {
+        const relativePath = path_1.default.relative(outputDir, importFrom.path).replace(/[\\]/g, '/');
+        return `./${relativePath}`;
+    }
+    return importFrom.path;
+}
+exports.getRelativePath = getRelativePath;

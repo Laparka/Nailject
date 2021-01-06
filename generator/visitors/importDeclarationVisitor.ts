@@ -3,6 +3,7 @@ import { ImportDeclaration, Node, SyntaxKind } from 'typescript';
 import { CodeAccessor, GeneratorContext, ImportFrom } from '../generatorContext';
 import * as path from 'path';
 import { existsSync } from 'fs';
+import { getFullPath } from '../utils';
 
 export default class ImportDeclarationVisitor extends NodeVisitorBase<ImportDeclaration> {
   canVisit(node: Node): boolean {
@@ -30,7 +31,7 @@ export default class ImportDeclarationVisitor extends NodeVisitorBase<ImportDecl
       || !existsSync(importPath);
     importClause.forEach(i => {
       i.isExternal = isExternal;
-      i.path = pathSpecifier.name;
+      i.path = isExternal ? pathSpecifier.name : getFullPath(moduleDir, pathSpecifier.name);
       context.imports.push(i);
     });
   }

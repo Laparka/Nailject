@@ -5,3 +5,5 @@ export declare function tryFindImportType(importName: string, imports: ImportFro
 export declare function toNamespace(path: string): string;
 export declare function getSymbolName(node: CodeAccessor, imports: ImportFrom[]): string;
 export declare function getAccessorDeclaration(codeAccessor: CodeAccessor, imports: ImportFrom[]): string;
+export declare function getFullPath(basePath: string, relativePath: string): string;
+export declare function getRelativePath(outputDir: string, importFrom: ImportFrom): string;

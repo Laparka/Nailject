@@ -3,7 +3,7 @@ module.exports = {
     globals: {
         'ts-jest': {
             tsConfig: {
-                allowJs: true
+                allowJs: false
             }
         }
     },

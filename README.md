@@ -1,6 +1,6 @@
 # Overview
 PileUple is a Compile-time IoC library, which generates Service Resolvers and an IoC container for TypeScript code. The library is using the TypeScript parser to build and analyze the AST of your source code.
-There are a lot of IoC libraries implemented for TypeScript. Most of these libraries are clones that use reflect-metadata and experimental decorators. The strategy of that approach is to register services and their dependencies in runtime. But since TypeScript is a transpiler, it's already a "reflector" for us.
+There are a lot of IoC libraries implemented for your TypeScript project. Most of these libraries are clones that use reflect-metadata and experimental decorators. The strategy of that approach is to register services and their dependencies in runtime. But since TypeScript is a transpiler, it's already a "reflector" itself.
 
 # Basic Usage
 >Project Structure Example

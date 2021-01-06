@@ -20,7 +20,7 @@ class ImportSpecifierVisitor extends nodeVisitor_1.NodeVisitorBase {
             throw Error("The import specifier name is not defined");
         }
         let typeName = name.name;
-        let child = undefined;
+        let child;
         if (propertyName) {
             typeName = propertyName.name;
             child = name;

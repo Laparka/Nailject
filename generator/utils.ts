@@ -1,4 +1,5 @@
 import { ImportFrom, CodeAccessor } from './generatorContext';
+import path from 'path';
 
 const ALPHA = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o', 'p', 'q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O', 'P', 'Q','R','S','T','U','V','W','X','Y','Z','_'];
 const NUMERIC = ['1','2','3','4','5','6','7','8','9','0'];
@@ -30,7 +31,7 @@ export function addUsedImports(node: CodeAccessor, imports: ImportFrom[], usedIm
     usedImports.push(usedImport);
   }
 
-  if (node.child) {
+  if (!usedImport && node.child) {
     addUsedImports(node.child, imports, usedImports);
   }
 
@@ -116,4 +117,17 @@ export function getAccessorDeclaration(codeAccessor: CodeAccessor, imports: Impo
   }
 
   return `${name}<${genericArgs.join(', ')}>`;
+}
+
+export function getFullPath(basePath: string, relativePath: string): string {
+  return path.join(basePath, relativePath).replace(/[\\]/g, '/');
+}
+
+export function getRelativePath(outputDir: string, importFrom: ImportFrom): string {
+  if (!importFrom.isExternal) {
+    const relativePath = path.relative(outputDir, importFrom.path).replace(/[\\]/g, '/');
+    return `./${relativePath}`;
+  }
+
+  return importFrom.path;
 }

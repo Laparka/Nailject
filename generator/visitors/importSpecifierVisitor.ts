@@ -24,7 +24,7 @@ export default class ImportSpecifierVisitor extends NodeVisitorBase<ImportSpecif
     }
 
     let typeName = name.name;
-    let child: CodeAccessor | undefined = undefined;
+    let child: CodeAccessor | undefined;
     if (propertyName) {
       typeName = propertyName.name;
       child = name;

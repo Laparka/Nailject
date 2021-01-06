@@ -1,7 +1,6 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { NamespaceImport, Node, SyntaxKind } from 'typescript';
 import { GeneratorContext, CodeAccessor, ImportFrom } from '../generatorContext';
-import * as path from 'path';
 
 export default class NamespaceImportVisitor extends NodeVisitorBase<NamespaceImport> {
   canVisit(node: Node): boolean {
@@ -19,8 +18,7 @@ export default class NamespaceImportVisitor extends NodeVisitorBase<NamespaceImp
       alias: id.name,
       path: '',
       kind: 'Namespace',
-      isExternal: false,
-      relativePath: path.parse(context.modulePath).dir
+      isExternal: false
     }];
   }
 }

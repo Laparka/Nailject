@@ -1,7 +1,6 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { NamedImports, Node, SyntaxKind } from 'typescript';
 import { CodeAccessor, GeneratorContext, ImportFrom } from '../generatorContext';
-import * as path from 'path';
 
 export default class NamedImportVisitor extends NodeVisitorBase<NamedImports> {
   canVisit(node: Node): boolean {
@@ -21,8 +20,7 @@ export default class NamedImportVisitor extends NodeVisitorBase<NamedImports> {
         path: '',
         isExternal: false,
         name: importSpecifierAccessor.name,
-        alias: importSpecifierAccessor.child ? importSpecifierAccessor.child.name : importSpecifierAccessor.name,
-        relativePath: path.parse(context.modulePath).dir
+        alias: importSpecifierAccessor.child ? importSpecifierAccessor.child.name : importSpecifierAccessor.name
       });
     }
 

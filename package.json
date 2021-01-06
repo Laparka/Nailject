@@ -1,11 +1,11 @@
 {
   "name": "pileuple",
-  "version": "0.0.5",
-  "description": "Dependency Injection library for TypeScript. Automatically generates service resolvers and the IoC Service Provider during build.",
+  "version": "0.0.6",
+  "description": "Compile-time IoC and Dependency Injection Framework library for TypeScript.",
   "homepage": "https://github.com/Laparka/pileuple",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Laparka/pileuple.git"
+    "url": "https://github.com/Laparka/pileuple.git"
   },
   "bugs": {
     "url": "https://github.com/Laparka/pileuple/issues"
@@ -25,7 +25,7 @@
   "keywords": [
     "dependency injection",
     "ioc",
-    "service locator"
+    "compile-time IoC"
   ],
   "author": " <laparka.shops@gmail.com>",
   "license": "ISC",

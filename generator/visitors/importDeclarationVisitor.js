@@ -23,6 +23,7 @@ const nodeVisitor_1 = require("./nodeVisitor");
 const typescript_1 = require("typescript");
 const path = __importStar(require("path"));
 const fs_1 = require("fs");
+const utils_1 = require("../utils");
 class ImportDeclarationVisitor extends nodeVisitor_1.NodeVisitorBase {
     canVisit(node) {
         return node.kind === typescript_1.SyntaxKind.ImportDeclaration;
@@ -45,7 +46,7 @@ class ImportDeclarationVisitor extends nodeVisitor_1.NodeVisitorBase {
             || !fs_1.existsSync(importPath);
         importClause.forEach(i => {
             i.isExternal = isExternal;
-            i.path = pathSpecifier.name;
+            i.path = isExternal ? pathSpecifier.name : utils_1.getFullPath(moduleDir, pathSpecifier.name);
             context.imports.push(i);
         });
     }
