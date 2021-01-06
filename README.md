@@ -1,6 +1,10 @@
 # Overview
 PileUple is a Compile-time IoC library, which generates Service Resolvers and an IoC container for TypeScript code. The library is using the TypeScript parser to build and analyze the AST of your source code.
-There are a lot of IoC libraries implemented for your TypeScript project. Most of these libraries are clones that use reflect-metadata and experimental decorators. The strategy of that approach is to register services and their dependencies in runtime. But since TypeScript is a transpiler, it's already a "reflector" itself.
+There are a lot of IoC libraries implemented for TypeScript. Most of these libraries are clones that use reflect-metadata and experimental decorators libraries. But since TypeScript is a transpiler, it's already a "reflector" itself.
+
+>:warning: The library is still in development. This is my first TypeScript learning project
+> I have a lot of plans. Mainly, I need this library for my AWS Lambda project,
+> where a microservices approach is more relevant, and the size of a package matters.
 
 # Basic Usage
 >Project Structure Example
@@ -8,19 +12,17 @@ There are a lot of IoC libraries implemented for your TypeScript project. Most o
 >src/
 >├── services/
 >│   ├── logger.ts
->│   └── apiService.ts
+>│   ├── apiService.ts
+>│   └── types.ts
 >└── registrations.ts
 >```
 ## 1) Implement Registrations
 First, you need to write a registration class to provide dependencies.
 
->:warning: Note that your code MUST export the registration class.
->The registration class MUST implement the DependenciesRegistration interface and all registrations must be done in the register-method by calling the ContainerBuilder-instance.
-> Also, don't define dependency-classes within the registration file, since the code-parser can't see any other classes within the registration class file
-
 >Code Content of `/src/registrations.ts`
 >```typescript
 >import { Logger, ConsoleLoggerImpl } from "./services/logger";
+>import { TYPES } from "./services/types";
 >import { ApiService, DebugApiServiceImpl } from "./services/apiService";
 >import { ContainerBuilder } from 'pileuple/api/containerBuilder';
 >import { DependenciesRegistration } from 'pileuple/api/dependenciesRegistration';
@@ -28,7 +30,7 @@ First, you need to write a registration class to provide dependencies.
 >export class Registrations implements DependenciesRegistration {
 >    register(containerBuilder: ContainerBuilder): void {
 >        containerBuilder.addTransient<Logger, ConsoleLoggerImpl>();
->        containerBuilder.addSingleton<ApiService, DebugApiServiceImpl>();
+>        containerBuilder.addSingleton<ApiService, DebugApiServiceImpl>(TYPES.ApiService);
 >    }
 >}
 >```
@@ -58,7 +60,8 @@ The code-generator then creates:
 >│   │    └── types.generated.ts
 >│   │
 >│   ├── logger.ts
->│   └── apiService.ts
+>│   ├── apiService.ts
+>│   └── types.ts
 >└── registrations.ts
 >```
 
@@ -69,6 +72,7 @@ The code-generator then creates:
 >import { DebugApiServiceImpl as DebugApiServiceImpl } from '../apiService';
 >
 >import { TYPES as __SERVICE_TYPE_SYMBOLS } from './types.generated';
+>import { TYPES } from '../types';
 >import { SingletonServiceResolver, InstanceConstructor, ServiceResolver } from 'pileuple/api/serviceResolver';
 >import { ServiceProvider } from 'pileuple/api/serviceProvider';
 >
@@ -82,7 +86,7 @@ The code-generator then creates:
 >}
 >
 >export function register(resolvers: Map<symbol, ServiceResolver[]>) {
->    const symbol = __SERVICE_TYPE_SYMBOLS._srcservicesapiService.ApiService;
+>    const symbol = TYPES.ApiService;
 >    let symbolResolvers = resolvers.get(symbol);
 >    if (!symbolResolvers) {
 >        symbolResolvers = [];
@@ -108,3 +112,14 @@ The code-generator then creates:
 >register2(symbolResolvers);
 >export const serviceProvider: ServiceProvider = CompiledServiceProvider.initialize(symbolResolvers);
 >```
+
+## 4) Use in your code
+Now, you are ready to use the IoC service provider:
+
+```typescript
+import { serviceProvider } from './services/__generated';
+import { ApiService } from './services/apiService';
+import { TYPES } from './services/__generated/types.generated';
+const apiService = serviceProvider.resolveOne<ApiService>(TYPES.ApiService);
+const response = apiService.post('/api/signIn', {username: "local", password: "h0$t"}, new Map<string, string>([["request-id","12321321"]]))
+```

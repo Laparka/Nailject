@@ -36,6 +36,15 @@ liquid.registerFilter('toImport', filters_1.toImportFilter);
 liquid.registerFilter('toSymbolPath', filters_1.toSymbolPath);
 const parser = new registrationsParser_1.default();
 function generate(filePath, className, outputDirectory) {
+    if (!filePath) {
+        throw Error(`The registration module path is required`);
+    }
+    if (!className) {
+        throw Error(`The registration module name is required`);
+    }
+    if (!outputDirectory) {
+        throw Error(`The output directory path is required`);
+    }
     const registrations = parser.parse(filePath, className);
     const allSymbols = [];
     const namespaces = [];
@@ -43,7 +52,6 @@ function generate(filePath, className, outputDirectory) {
     if (!fs_1.existsSync(outputDirectory)) {
         fs_1.mkdirSync(outputDirectory, { recursive: true });
     }
-    console.log(resolverTemplatePath);
     for (const r of registrations) {
         const resolverCode = liquid.renderFileSync(resolverTemplatePath, { registration: r, outputDir: outputDirectory });
         const resolverName = [r.instance.displayName, r.service.displayName].join('Of') + `${r.scope}ServiceResolver`;
