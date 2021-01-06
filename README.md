@@ -1,8 +1,14 @@
 #  Ulutshaizing and Documentation In Progress 
-# TypeScript Dependency Injection
+# TypeScript Dependency Injection Library
 This is my learning project.
-Detects container builder registrations and generated service resolvers with a IoC container.
-The IoC Container then used to resolve services by symbols.
+The library helps to avoid manual class initializations. You just provide the registrations and run the library against the registration class.
+The library analyzes the registration class in the file and creates service resolvers and the IoC Service Provider.
+This is a basic implementation for my needs. If the library will be useful for the others, I will make it more configurable and with all other features.
+
+# How this library is different compared to all others DI libraries for TypeScript?
+* Doesn't require experimental decorators
+* Doesn't require the reflect-metadata library
+* No runtime dynamic - everything is determined.
 
 ## Register your dependencies
 
@@ -19,8 +25,8 @@ src/
 ```typescript
 import { Logger, ConsoleLoggerImpl } from "./services/logger";
 import { ApiService, DebugApiServiceImpl } from "./services/apiService";
-import { ContainerBuilder } from 'iocgenerator/api/containerBuilder';
-import { DependenciesRegistration } from 'iocgenerator/api/dependenciesRegistration';
+import { ContainerBuilder } from 'pileuple/api/containerBuilder';
+import { DependenciesRegistration } from 'pileuple/api/dependenciesRegistration';
 
 export class Registrations implements DependenciesRegistration {
     register(containerBuilder: ContainerBuilder): void {
@@ -93,9 +99,9 @@ export class DebugApiServiceImpl implements ApiService {
 
 #### Run the following command
 >
->`npm run iocgenerator -- ./registrations.ts --moduleName Registrations --outputDir ./services/__generated/`
+>`npm run pileuple -- ./registrations.ts --moduleName Registrations --outputDir ./services/__generated/`
 
-Please note, that there is -- after the iocgenerator statement. This is my first TypeScript NodeJS project
+Please note, that there is -- after the pileuple statement. This is my first TypeScript NodeJS project
 
 ### Check the generated files with your outputDir
 ```
@@ -118,8 +124,8 @@ import { ApiService as ApiService } from '../apiService';
 import { DebugApiServiceImpl as DebugApiServiceImpl } from '../apiService';
 
 import { TYPES as __SERVICE_TYPE_SYMBOLS } from './types.generated';
-import { SingletonServiceResolver, InstanceConstructor, ServiceResolver } from 'iocgenerator/api/serviceResolver';
-import { ServiceProvider } from 'iocgenerator/api/serviceProvider';
+import { SingletonServiceResolver, InstanceConstructor, ServiceResolver } from 'pileuple/api/serviceResolver';
+import { ServiceProvider } from 'pileuple/api/serviceProvider';
 
 class Resolver extends SingletonServiceResolver<ApiService> {
     doResolve(serviceProvider: ServiceProvider): ApiService {
@@ -147,8 +153,8 @@ The main file, which contains the IoC Service Provider is in the index.ts:
 import { register as register1 } from './consoleLoggerImplOfLoggerTransientServiceResolver';
 import { register as register2 } from './debugApiServiceImplOfApiServiceSingletonServiceResolver';
 
-import { ServiceProvider, CompiledServiceProvider } from 'iocgenerator/api/serviceProvider';
-import { ServiceResolver } from 'iocgenerator/api/serviceResolver';
+import { ServiceProvider, CompiledServiceProvider } from 'pileuple/api/serviceProvider';
+import { ServiceResolver } from 'pileuple/api/serviceResolver';
 
 const symbolResolvers = new Map<symbol, ServiceResolver[]>();
 

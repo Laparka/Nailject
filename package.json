@@ -1,25 +1,25 @@
 {
-  "name": "iocgenerator",
-  "version": "1.0.3",
-  "description": "The TypeScript-only Dependency Injection Library based on generated Service Locators for each registered service",
-  "homepage": "https://github.com/Laparka/iocgenerator",
+  "name": "pileuple",
+  "version": "0.0.5",
+  "description": "Dependency Injection library for TypeScript. Automatically generates service resolvers and the IoC Service Provider during build.",
+  "homepage": "https://github.com/Laparka/pileuple",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Laparka/iocgenerator.git"
+    "url": "git+https://github.com/Laparka/pileuple.git"
   },
   "bugs": {
-    "url": "https://github.com/Laparka/iocgenerator/issues"
+    "url": "https://github.com/Laparka/pileuple/issues"
   },
   "scripts": {
     "test": "jest --watch",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint",
-    "start": "tsc & node bin/iocgenerator.js ./__tests__/module.ts --moduleName Module --outputDir ./__tests__/.generated/"
+    "start": "tsc & node bin/pileuple.js ./__tests__/module.ts --moduleName Module --outputDir ./__tests__/.generated/"
   },
   "main": "index.js",
   "bin": {
-    "iocgenerator": "bin/iocgenerator.js"
+    "pileuple": "bin/pileuple.js"
   },
   "type": "commonjs",
   "keywords": [

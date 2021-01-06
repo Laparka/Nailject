@@ -11,10 +11,7 @@
     ],
     "allowJs": true,
     "noUnusedLocals": true,
-    "baseUrl": "./",
-    "paths": {
-      "@iocgenerator/*": [ "*" ]
-    }
+    "baseUrl": "./"
   },
   "compileOnSave": false,
   "include": ["bin/*", "generator/*", "api/*", "index.ts"],

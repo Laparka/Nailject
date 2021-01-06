@@ -6,8 +6,8 @@ exports.resolverTemplate = '' +
     '{{ import | toImport: outputDir }}\n' +
     '{% endfor %}\n' +
     'import { TYPES as __SERVICE_TYPE_SYMBOLS } from \'./types.generated\';\n' +
-    'import { {{ registration.scope }}ServiceResolver, InstanceConstructor, ServiceResolver } from \'iocgenerator/api/serviceResolver\';\n' +
-    'import { ServiceProvider } from \'iocgenerator/api/serviceProvider\';\n' +
+    'import { {{ registration.scope }}ServiceResolver, InstanceConstructor, ServiceResolver } from \'pileuple/api/serviceResolver\';\n' +
+    'import { ServiceProvider } from \'pileuple/api/serviceProvider\';\n' +
     '\n' +
     'class Resolver extends {{ registration.scope }}ServiceResolver<{{registration.service.accessorDeclaration}}> {\n' +
     '    doResolve(serviceProvider: ServiceProvider): {{registration.service.accessorDeclaration}} {\n' +
@@ -59,8 +59,8 @@ exports.symbolsTemplate = 'export const TYPES = {\n' +
 exports.serviceProviderTemplate = '{%- for resolver in resolvers -%}\n' +
     'import { register as register{{ forloop.index }} } from \'./{{ resolver }}\';\n' +
     '{% endfor %}\n' +
-    'import { ServiceProvider, CompiledServiceProvider } from \'iocgenerator/api/serviceProvider\';\n' +
-    'import { ServiceResolver } from \'iocgenerator/api/serviceResolver\';\n' +
+    'import { ServiceProvider, CompiledServiceProvider } from \'pileuple/api/serviceProvider\';\n' +
+    'import { ServiceResolver } from \'pileuple/api/serviceResolver\';\n' +
     '\n' +
     'const symbolResolvers = new Map<symbol, ServiceResolver[]>();\n' +
     '{% for resolver in resolvers %}\n' +

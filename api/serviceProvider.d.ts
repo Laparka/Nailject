@@ -10,6 +10,7 @@ export interface ServiceScopeProvider {
 export declare class CompiledServiceProvider implements ServiceProvider, ServiceScopeProvider {
     private static _SingletonServiceProvider;
     private readonly _serviceResolversMap;
+    private readonly _resolvedInstances;
     private constructor();
     static initialize(serviceResolvers: Map<symbol, ServiceResolver[]>): ServiceProvider;
     getSingletonServiceProvider(): ServiceProvider;
