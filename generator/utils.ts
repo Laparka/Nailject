@@ -12,7 +12,7 @@ export function getLastPropertyAccessor(node: CodeAccessor): string {
   return node.name
 }
 
-export function addUsedImports(node: CodeAccessor, imports: ImportFrom[], usedImports: ImportFrom[]): ImportFrom | null {
+export function addUsedImports(node: CodeAccessor, imports: ImportFrom[], usedImports: ImportFrom[], skipChild?: boolean): ImportFrom | null {
   if (node.name === '[]') {
     if (!node.child) {
       throw Error('The array type must have the element type object');
@@ -31,8 +31,8 @@ export function addUsedImports(node: CodeAccessor, imports: ImportFrom[], usedIm
     usedImports.push(usedImport);
   }
 
-  if (!usedImport && node.child) {
-    addUsedImports(node.child, imports, usedImports);
+  if (!skipChild && !usedImport && node.child) {
+    addUsedImports(node.child, imports, usedImports, true);
   }
 
   if (node.typeNames) {

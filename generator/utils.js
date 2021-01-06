@@ -14,7 +14,7 @@ function getLastPropertyAccessor(node) {
     return node.name;
 }
 exports.getLastPropertyAccessor = getLastPropertyAccessor;
-function addUsedImports(node, imports, usedImports) {
+function addUsedImports(node, imports, usedImports, skipChild) {
     if (node.name === '[]') {
         if (!node.child) {
             throw Error('The array type must have the element type object');
@@ -29,8 +29,8 @@ function addUsedImports(node, imports, usedImports) {
         }
         usedImports.push(usedImport);
     }
-    if (!usedImport && node.child) {
-        addUsedImports(node.child, imports, usedImports);
+    if (!skipChild && !usedImport && node.child) {
+        addUsedImports(node.child, imports, usedImports, true);
     }
     if (node.typeNames) {
         for (const typeName of node.typeNames) {
