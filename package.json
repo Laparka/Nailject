@@ -24,8 +24,10 @@
   "type": "commonjs",
   "keywords": [
     "dependency injection",
-    "ioc",
-    "compile-time IoC"
+    "IoC",
+    "compile-time IoC",
+    "typescript IoC",
+    "typescript dependency injection"
   ],
   "author": " <laparka.shops@gmail.com>",
   "license": "ISC",

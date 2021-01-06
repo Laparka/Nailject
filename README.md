@@ -7,6 +7,10 @@ There are a lot of IoC libraries implemented for TypeScript. Most of these libra
 > where a microservices approach is more relevant, and the size of a package matters.
 
 # Basic Usage
+```
+npm install pileuple --save-dev
+```
+
 >Project Structure Example
 >```
 >src/
