@@ -1,4 +1,12 @@
 import { LifetimeScope } from '../api/containerBuilder';
+import { ScriptTarget } from 'typescript';
+
+export type GeneratorParameters = {
+  registrationFilePath: string;
+  registrationClassName: string;
+  outputDirectory: string;
+  scriptTarget: ScriptTarget;
+};
 
 export type GeneratorMode = 'Module' | 'Dependent';
 

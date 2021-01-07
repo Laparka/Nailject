@@ -15,7 +15,7 @@
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint",
-    "start": "tsc & node bin/pileuple.js ./__tests__/module.ts --moduleName Module --outputDir ./__tests__/.generated/"
+    "start": "tsc & node bin/pileuple.js ./__tests__/module.ts --moduleName Module --outputDir ./__tests__/.generated/ --scriptTarget ES2020"
   },
   "main": "index.js",
   "bin": {

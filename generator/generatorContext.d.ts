@@ -1,4 +1,11 @@
 import { LifetimeScope } from '../api/containerBuilder';
+import { ScriptTarget } from 'typescript';
+export declare type GeneratorParameters = {
+    registrationFilePath: string;
+    registrationClassName: string;
+    outputDirectory: string;
+    scriptTarget: ScriptTarget;
+};
 export declare type GeneratorMode = 'Module' | 'Dependent';
 export declare type RegistrationSymbol = {
     symbolNamespace: string;
