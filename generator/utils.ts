@@ -1,63 +1,96 @@
-import { ImportFrom, CodeAccessor } from './generatorContext';
+import { ImportFrom, CodeAccessor, ImportDeclaration } from './generatorContext';
 import path from 'path';
 
 const ALPHA = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o', 'p', 'q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O', 'P', 'Q','R','S','T','U','V','W','X','Y','Z','_'];
 const NUMERIC = ['1','2','3','4','5','6','7','8','9','0'];
 
-export function getLastPropertyAccessor(node: CodeAccessor): string {
-  if (node.child) {
-    return getLastPropertyAccessor(node.child);
+export function tokenizePropertyAccessor(propertyAccessor: CodeAccessor): string[] {
+  if (!propertyAccessor) {
+    return [];
   }
 
-  return node.name
-}
-
-export function addUsedImports(node: CodeAccessor, imports: ImportFrom[], usedImports: ImportFrom[], skipChild?: boolean): ImportFrom | null {
-  if (node.name === '[]') {
-    if (!node.child) {
-      throw Error('The array type must have the element type object');
+  if (propertyAccessor.name === '[]') {
+    const children: string[] = [];
+    if (propertyAccessor.child) {
+      children.push(...tokenizePropertyAccessor(propertyAccessor.child));
     }
 
-    return addUsedImports(node.child, imports, usedImports);
+    children.push('[]');
+    return children;
   }
 
-  let usedImport = tryFindImportType(node.name, usedImports);
-  if (!usedImport) {
-    usedImport = tryFindImportType(node.name, imports);
-    if (!usedImport) {
-      return null;
-    }
-
-    usedImports.push(usedImport);
-  }
-
-  if (!skipChild && !usedImport && node.child) {
-    addUsedImports(node.child, imports, usedImports, true);
-  }
-
-  if (node.typeNames) {
-    for (const typeName of node.typeNames) {
-      addUsedImports(typeName, imports, usedImports);
-    }
-  }
-
-  return usedImport;
-}
-
-export function tryFindImportType(importName: string, imports: ImportFrom[]): ImportFrom | null {
-  if (imports) {
-    const index = imports.findIndex(_ => _.alias === importName);
-    if(index >= 0) {
-      return imports[index];
-    }
-  }
-
-  return null;
-}
-
-export function toNamespace(path: string): string {
   const result: string[] = [];
-  for(const ch of path) {
+  result.push(propertyAccessor.name);
+  if (propertyAccessor.child) {
+    result.push(...tokenizePropertyAccessor(propertyAccessor.child));
+  }
+
+  if (propertyAccessor.typeNames && propertyAccessor.typeNames.length !== 0) {
+    const genericDefinition = propertyAccessor.typeNames.map(t => tokenizePropertyAccessor(t)).join(',');
+    result.push(`<${genericDefinition}>`);
+  }
+
+  return result;
+}
+
+export function assignAccessorImport(propertyAccessor: CodeAccessor, imports: ImportFrom[]): ImportDeclaration | null {
+  if (!imports) {
+    throw Error(`The imports collection is missing`);
+  }
+
+  if (!propertyAccessor || !propertyAccessor.name) {
+    throw Error(`The property accessor instance name is missing`);
+  }
+
+  if (propertyAccessor.name === '[]') {
+    if (propertyAccessor.child) {
+      return assignAccessorImport(propertyAccessor.child, imports);
+    }
+
+    throw Error(`The array element type is not defined`);
+  }
+
+  const importFromIndex = imports.findIndex(i => i.alias === propertyAccessor.name);
+  if (importFromIndex === -1) {
+    return null;
+  }
+
+  const importDeclaration: ImportDeclaration = {
+    from: imports[importFromIndex],
+    normalized: normalizeImport(propertyAccessor, imports[importFromIndex])
+  };
+
+  propertyAccessor.importDeclaration = importDeclaration;
+  if (propertyAccessor.typeNames && propertyAccessor.typeNames.length !== 0) {
+    propertyAccessor.typeNames.forEach(t => assignAccessorImport(t, imports));
+  }
+
+  return importDeclaration;
+}
+
+export function getAccessorImport(propertyAccessor: CodeAccessor): ImportDeclaration {
+  if (!propertyAccessor) {
+    throw Error(`The property accessor is missing`);
+  }
+
+  if (propertyAccessor.name === '[]') {
+    if (!propertyAccessor.child) {
+      throw Error(`The property accessor child is missing`);
+    }
+
+    return getAccessorImport(propertyAccessor.child)
+  }
+
+  if (!propertyAccessor.importDeclaration) {
+    throw Error(`The property accessor ${propertyAccessor.name} import declaration is not defined`);
+  }
+
+  return propertyAccessor.importDeclaration;
+}
+
+export function toNamespace(importPath: string): string {
+  const result: string[] = [];
+  for(const ch of importPath) {
     if (ALPHA.findIndex(_ => _ === ch) >= 0 || NUMERIC.findIndex(_ => _ === ch) >= 0) {
       result.push(ch);
     }
@@ -68,55 +101,6 @@ export function toNamespace(path: string): string {
   }
 
   return result.join('');
-}
-
-export function getSymbolName(node: CodeAccessor, imports: ImportFrom[]): string {
-  const nameTokens: string[] = [];
-  if (node.name !== '[]') {
-    const imported = tryFindImportType(node.name, imports);
-    let name = node.name;
-    if (imported && node.name === imported.alias) {
-      name = imported.name;
-    }
-
-    if (name !== '*') {
-      nameTokens.push(name);
-    }
-  }
-
-  if (node.child) {
-    // Alias accessor
-    nameTokens.push(getSymbolName(node.child, imports));
-  }
-
-  if (node.typeNames && node.typeNames.length !== 0) {
-    node.typeNames.forEach(n => nameTokens.push(getSymbolName(n, imports)));
-  }
-
-  return nameTokens.join('Of');
-}
-
-export function getAccessorDeclaration(codeAccessor: CodeAccessor, imports: ImportFrom[]): string {
-  let name = codeAccessor.name;
-  if (name === '[]') {
-    if (codeAccessor.child) {
-      return `${getAccessorDeclaration(codeAccessor.child, imports)}[]`;
-    }
-  }
-
-  const genericArgs: string[] = [];
-  if (codeAccessor.child) {
-    name = `${name}.${getAccessorDeclaration(codeAccessor.child, imports)}`;
-  }
-  else if (codeAccessor.typeNames && codeAccessor.typeNames.length !== 0) {
-    codeAccessor.typeNames.forEach(n => genericArgs.push(getAccessorDeclaration(n, imports)));
-  }
-
-  if (genericArgs.length === 0) {
-    return name;
-  }
-
-  return `${name}<${genericArgs.join(', ')}>`;
 }
 
 export function getFullPath(basePath: string, relativePath: string): string {
@@ -130,4 +114,31 @@ export function getRelativePath(outputDir: string, importFrom: ImportFrom): stri
   }
 
   return importFrom.path;
+}
+export function normalizeImport(pathAccessor: CodeAccessor, importFrom: ImportFrom): ImportFrom {
+  /*
+  * import Logger from './';
+  * import {Logger as Shlogger} from './';
+  * import * as S from './';
+  * const a: S.Logger = {};
+  * const b: Shlogger = {};
+  * const c: Logger = {};
+  */
+  const clone: ImportFrom = JSON.parse(JSON.stringify(importFrom));
+
+  switch (clone.kind) {
+    case 'Namespace': {
+      clone.kind = 'Named';
+      clone.name = pathAccessor.child!.name;
+      clone.alias = clone.name;
+      break;
+    }
+    case 'Named': {
+      clone.alias = clone.name;
+      clone.kind = 'Named';
+      break;
+    }
+  }
+
+  return clone;
 }

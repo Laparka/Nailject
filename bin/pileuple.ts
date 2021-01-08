@@ -2,7 +2,7 @@
 
 import commander, { CommanderStatic } from 'commander';
 import { IoCGenerator } from '../';
-import { FileCodeWriter } from '../generator/services/codeWriter';
+import { FileCodeWriter } from '../renderer/codeWriter';
 import { GeneratorParameters } from '../generator/generatorContext';
 import { ScriptTarget } from 'typescript';
 
