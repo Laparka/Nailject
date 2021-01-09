@@ -3,7 +3,7 @@ import { Node as TypeScriptNode } from 'typescript';
 
 export interface NodeVisitor {
   canVisit(node: TypeScriptNode): boolean;
-  visit(node: TypeScriptNode, context: GeneratorContext): any | void;
+  visit(node: TypeScriptNode, context: GeneratorContext): unknown;
 }
 
 export abstract class NodeVisitorBase<TNode extends TypeScriptNode> implements NodeVisitor {
@@ -12,7 +12,7 @@ export abstract class NodeVisitorBase<TNode extends TypeScriptNode> implements N
     this._rootVisitor = rootVisitor;
   }
 
-  protected visitNext(node: TypeScriptNode, context: GeneratorContext): any | void {
+  protected visitNext(node: TypeScriptNode, context: GeneratorContext): unknown {
     if (this._rootVisitor.canVisit(node)) {
       return this._rootVisitor.visit(node, context)
     }
@@ -22,9 +22,9 @@ export abstract class NodeVisitorBase<TNode extends TypeScriptNode> implements N
 
   abstract canVisit(node: TypeScriptNode): boolean;
 
-  abstract doVisit(node: TNode, context: GeneratorContext): any | void;
+  abstract doVisit(node: TNode, context: GeneratorContext): unknown;
 
-  visit(node: TypeScriptNode, context: GeneratorContext): any | void {
+  visit(node: TypeScriptNode, context: GeneratorContext): unknown {
     if (!this.canVisit(node)) {
       throw Error(`The current node visitor does not support the given node ${node.kind}`);
     }

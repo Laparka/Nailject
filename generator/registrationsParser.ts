@@ -8,7 +8,8 @@ import {
   ImportFrom,
   RegistrationDescriptor,
 } from './generatorContext';
-import { getAccessorImport, tokenizePropertyAccessor } from './utils';
+import { isSameType, tokenizePropertyAccessor } from './utils';
+import { getTypeName } from '../renderer/templates/filters';
 
 export default class RegistrationsParser {
   private readonly _visitor: NodeVisitor;
@@ -80,19 +81,10 @@ export default class RegistrationsParser {
       throw Error(`Failed to parse the registration instance`);
     }
 
-    const serviceImport = getAccessorImport(constructorArg.service.accessor);
-    const serviceRegistrationIndex = allRegistrations.findIndex(r => {
-      const accessor = r.service.accessor;
-      if (accessor && accessor.importDeclaration) {
-        return accessor.importDeclaration.normalized.path === serviceImport.normalized.path
-          && accessor.importDeclaration.normalized.name === serviceImport.normalized.name;
-      }
-
-      return false;
-    });
+    const serviceRegistrationIndex = allRegistrations.findIndex(r => isSameType(constructorArg.service.accessor, r.service.accessor));
 
     if (serviceRegistrationIndex === -1) {
-      throw Error(`The constructor argument ${constructorArg.service.accessor.name} type registration was not found`);
+      throw Error(`The registration type ${getTypeName(constructorArg.service.accessor, true)} was not found`);
     }
 
     const serviceRegistration = allRegistrations[serviceRegistrationIndex];
@@ -100,7 +92,10 @@ export default class RegistrationsParser {
       throw Error(`The ${serviceRegistration.service.accessor.name} service has registration symbol missing`);
     }
 
-    registration.instance.constructorArgs.push(serviceRegistration.service.symbolDescriptor)
+    registration.instance.constructorArgs.push({
+      symbolDescriptor: serviceRegistration.service.symbolDescriptor,
+      isArray: constructorArg.service.accessor.name === '[]'
+    })
   }
 
   private static getSyntax(filePath: string, scriptTarget: ScriptTarget): Node {

@@ -25,7 +25,7 @@ export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclarati
       throw Error(`The register-method argument parameter type is required`);
     }
 
-    const nameTokens = this.visitNext(node.name, context);
+    const nameTokens = this.visitNext(node.name, context) as CodeAccessor;
     if (!nameTokens) {
       throw Error(`Invalid method-parameter name. Only register-method parameters are supported`)
     }

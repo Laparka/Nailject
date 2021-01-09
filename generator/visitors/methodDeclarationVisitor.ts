@@ -1,6 +1,6 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { MethodDeclaration, Node, SyntaxKind } from 'typescript';
-import { GeneratorContext } from '../generatorContext';
+import { CodeAccessor, GeneratorContext } from '../generatorContext';
 
 export default class MethodDeclarationVisitor extends NodeVisitorBase<MethodDeclaration> {
   canVisit(node: Node): boolean {
@@ -12,7 +12,7 @@ export default class MethodDeclarationVisitor extends NodeVisitorBase<MethodDecl
       return;
     }
 
-    const nameTokens = this.visitNext(node.name, context);
+    const nameTokens = this.visitNext(node.name, context) as CodeAccessor;
     if (!nameTokens) {
       throw Error(`Failed to parse the method name`);
     }

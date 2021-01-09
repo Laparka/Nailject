@@ -68,24 +68,78 @@ export function assignAccessorImport(propertyAccessor: CodeAccessor, imports: Im
   return importDeclaration;
 }
 
-export function getAccessorImport(propertyAccessor: CodeAccessor): ImportDeclaration {
-  if (!propertyAccessor) {
-    throw Error(`The property accessor is missing`);
-  }
-
-  if (propertyAccessor.name === '[]') {
-    if (!propertyAccessor.child) {
-      throw Error(`The property accessor child is missing`);
+export function isSameType(expected: CodeAccessor, actual: CodeAccessor): boolean {
+  if (expected.name === '[]') {
+    if (expected.child) {
+      return isSameType(expected.child, actual);
     }
 
-    return getAccessorImport(propertyAccessor.child)
+    return false;
   }
 
-  if (!propertyAccessor.importDeclaration) {
-    throw Error(`The property accessor ${propertyAccessor.name} import declaration is not defined`);
+  if (actual.name === '[]') {
+    if (actual.child) {
+      return isSameType(expected, actual.child);
+    }
+
+    return false;
   }
 
-  return propertyAccessor.importDeclaration;
+  let isRootEq: boolean;
+  if (expected.importDeclaration) {
+    if (actual.importDeclaration) {
+      isRootEq = JSON.stringify(expected.importDeclaration.normalized) === JSON.stringify(actual.importDeclaration.normalized);
+    }
+    else {
+      isRootEq = false;
+    }
+  }
+  else {
+    isRootEq = !actual.importDeclaration && expected.name === actual.name;
+  }
+
+  if (!isRootEq) {
+    return false;
+  }
+
+  let isChildEq: boolean;
+  if (expected.child) {
+    if (actual.child) {
+      isChildEq = isSameType(expected.child, actual.child);
+    }
+    else {
+      isChildEq = false;
+    }
+  }
+  else {
+    isChildEq = !actual.child;
+  }
+
+  if (!isChildEq) {
+    return false;
+  }
+
+  let areTypeArgsEq = true;
+  if (expected.typeNames) {
+    if (actual.typeNames) {
+      areTypeArgsEq = expected.typeNames.length === actual.typeNames.length;
+      if (areTypeArgsEq) {
+        expected.typeNames.forEach((t, i) => {
+          if (!isSameType(t, actual.typeNames![i])) {
+            areTypeArgsEq = false;
+          }
+        });
+      }
+    }
+    else {
+      areTypeArgsEq = false;
+    }
+  }
+  else {
+    areTypeArgsEq = !actual.typeNames;
+  }
+
+  return areTypeArgsEq;
 }
 
 export function toNamespace(importPath: string): string {
@@ -115,6 +169,7 @@ export function getRelativePath(outputDir: string, importFrom: ImportFrom): stri
 
   return importFrom.path;
 }
+
 export function normalizeImport(pathAccessor: CodeAccessor, importFrom: ImportFrom): ImportFrom {
   /*
   * import Logger from './';

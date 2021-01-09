@@ -8,12 +8,12 @@ export default class QualifiedNameVisitor extends NodeVisitorBase<QualifiedName>
   }
 
   doVisit(node: QualifiedName, context: GeneratorContext): CodeAccessor {
-    const leftTokens = this.visitNext(node.left, context);
+    const leftTokens = this.visitNext(node.left, context) as CodeAccessor;
     if (!leftTokens) {
       throw Error(`Failed to parse the left-expression of the qualified token`);
     }
 
-    const rightTokens = this.visitNext(node.right, context);
+    const rightTokens = this.visitNext(node.right, context) as CodeAccessor;
     if (!rightTokens) {
       throw Error(`Failed to parse the right-expression of the qualified token`);
     }
