@@ -8,8 +8,6 @@ import {
   ImportFrom,
   RegistrationDescriptor,
 } from './generatorContext';
-import { isSameType, tokenizePropertyAccessor } from './utils';
-import { getTypeName } from '../renderer/templates/filters';
 
 export default class RegistrationsParser {
   private readonly _visitor: NodeVisitor;
@@ -46,21 +44,20 @@ export default class RegistrationsParser {
   }
 
   private fillDependencies(parameters: GeneratorParameters, registrations: RegistrationDescriptor[], imports: ImportFrom[]): void {
-    for(const registration of registrations) {
-      if (!registration.instance || !registration.instance.accessor.importDeclaration) {
+    /*for(const registration of registrations) {
+      if (!registration.instance?.accessor?.normalized?.importFrom) {
         continue;
       }
 
-      const filePath = `${registration.instance.accessor.importDeclaration.from.path}.ts`;
+      const filePath = `${registration.instance.accessor.normalized.importFrom.path}.ts`;
       if (!existsSync(path.normalize(filePath))) {
         throw Error(`Package instances are not supported yet`);
       }
 
       const dependencies: RegistrationDescriptor[] = [];
-      const instanceTypeNameTokens = tokenizePropertyAccessor(registration.instance.accessor);
       this._visitor.visit(RegistrationsParser.getSyntax(filePath, parameters.scriptTarget), {
         modulePath: filePath,
-        instanceName: instanceTypeNameTokens[instanceTypeNameTokens.length - 1],
+        instanceName: registration.instance?.accessor.normalized.name,
         mode: 'Dependent',
         registrations: dependencies,
         imports: imports
@@ -71,31 +68,7 @@ export default class RegistrationsParser {
       }
 
       dependencies.forEach(ctorArg => RegistrationsParser.assignArgumentSymbol(registration, ctorArg, registrations));
-    }
-  }
-
-  private static assignArgumentSymbol(registration: RegistrationDescriptor,
-                                      constructorArg: RegistrationDescriptor,
-                                      allRegistrations: RegistrationDescriptor[]) {
-    if (!registration.instance) {
-      throw Error(`Failed to parse the registration instance`);
-    }
-
-    const serviceRegistrationIndex = allRegistrations.findIndex(r => isSameType(constructorArg.service.accessor, r.service.accessor));
-
-    if (serviceRegistrationIndex === -1) {
-      throw Error(`The registration type ${getTypeName(constructorArg.service.accessor, true)} was not found`);
-    }
-
-    const serviceRegistration = allRegistrations[serviceRegistrationIndex];
-    if (!serviceRegistration.service.symbolDescriptor) {
-      throw Error(`The ${serviceRegistration.service.accessor.name} service has registration symbol missing`);
-    }
-
-    registration.instance.constructorArgs.push({
-      symbolDescriptor: serviceRegistration.service.symbolDescriptor,
-      isArray: constructorArg.service.accessor.name === '[]'
-    })
+    }*/
   }
 
   private static getSyntax(filePath: string, scriptTarget: ScriptTarget): Node {

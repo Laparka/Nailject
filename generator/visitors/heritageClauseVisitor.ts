@@ -1,7 +1,7 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { HeritageClause, Node, SyntaxKind } from 'typescript';
 import { GeneratorContext, CodeAccessor } from '../generatorContext';
-import { assignAccessorImport, tokenizePropertyAccessor } from '../utils';
+import { getNormalizedImport, tryFindImportByAccessor } from '../utils';
 
 const dependenciesRegistrationDir = 'api/dependenciesRegistration';
 export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClause> {
@@ -20,15 +20,19 @@ export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClaus
         throw Error(`Invalid inheritance type`);
       }
 
-      const interfaceNameTokens = tokenizePropertyAccessor(interfaceAccessor);
-      if (interfaceNameTokens.length !== 0 && interfaceNameTokens[interfaceNameTokens.length - 1] === 'DependenciesRegistration') {
-        const interfaceImport = assignAccessorImport(interfaceAccessor, context.imports);
-        if (interfaceImport) {
-          // TODO: Find a better way to assert the valid path
-          if (interfaceImport.from.path.endsWith(dependenciesRegistrationDir)) {
-            return interfaceAccessor;
-          }
-        }
+      const importDefinition = tryFindImportByAccessor(interfaceAccessor, context.imports);
+      if (!importDefinition) {
+        continue;
+      }
+
+      interfaceAccessor.importFrom = importDefinition;
+      const normalizedImport = getNormalizedImport(interfaceAccessor);
+      if (!normalizedImport) {
+        continue;
+      }
+
+      if (normalizedImport.name === 'DependenciesRegistration' && normalizedImport.path.endsWith(dependenciesRegistrationDir)) {
+        return interfaceAccessor;
       }
     }
   }

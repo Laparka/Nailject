@@ -9,7 +9,7 @@ import {
   SymbolDescriptor
 } from '../generatorContext';
 import { LifetimeScope } from '../../api/containerBuilder';
-import { assignAccessorImport } from '../utils';
+import { tryFindImportByAccessor } from '../utils';
 
 export default class CallExpressionVisitor extends NodeVisitorBase<CallExpression> {
   canVisit(node: Node): boolean {
@@ -62,9 +62,9 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       throw Error(`No instance type argument is defined for the ${methodCallAccessor.child.name}-method`)
     }
 
-    const serviceImport = assignAccessorImport(serviceTypeAccessor, context.imports);
-    if (!serviceImport) {
-      throw Error(`Failed to find the service type in imports`);
+    const serviceImport = tryFindImportByAccessor(serviceTypeAccessor, context.imports);
+    if (serviceImport) {
+      serviceTypeAccessor.importFrom = serviceImport;
     }
 
     let symbolDescriptor: SymbolDescriptor | undefined;
@@ -75,9 +75,9 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
         throw Error(`Failed to parse the constructor argument type of ${instanceTypeAccessor.name}`)
       }
 
-      const symbolTypeImport = assignAccessorImport(argumentTypeAccessor, context.imports);
+      const symbolTypeImport = tryFindImportByAccessor(argumentTypeAccessor, context.imports);
       if (!symbolTypeImport) {
-        throw Error(`Failed to find the import type of the ${argumentTypeAccessor.name} constructor argument`);
+        throw Error(`Failed to find a symbol-type registration ${argumentTypeAccessor.name} in import declarations`);
       }
 
       symbolDescriptor = {
@@ -98,9 +98,9 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       accessor: serviceTypeAccessor
     };
 
-    const instanceTypeImport = assignAccessorImport(instanceTypeAccessor, context.imports);
-    if (!instanceTypeImport) {
-      throw Error(`Failed to find the instance type in imports`);
+    const instanceTypeImport = tryFindImportByAccessor(instanceTypeAccessor, context.imports);
+    if (instanceTypeImport) {
+      instanceTypeAccessor.importFrom = instanceTypeImport;
     }
 
     const instanceDescriptor: InstanceDescriptor = {

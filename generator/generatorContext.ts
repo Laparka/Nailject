@@ -11,8 +11,8 @@ export type GeneratorParameters = {
 export type GeneratorMode = 'Module' | 'Dependent';
 
 export type CodeAccessor = {
-  importDeclaration?: ImportDeclaration;
   name: string;
+  importFrom?: ImportFrom;
   typeNames?: CodeAccessor[];
   child?: CodeAccessor;
 };
@@ -39,11 +39,6 @@ export type ConstructorDescriptor = {
 export type ServiceDescriptor = {
   accessor: CodeAccessor;
   symbolDescriptor?: SymbolDescriptor;
-};
-
-export type ImportDeclaration = {
-  from: ImportFrom;
-  normalized: ImportFrom;
 };
 
 export type InstanceDescriptor = {
