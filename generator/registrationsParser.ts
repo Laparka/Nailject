@@ -4,8 +4,9 @@ import { existsSync, readFileSync } from 'fs';
 import { NodeVisitor } from './visitors/nodeVisitor';
 import AnyNodeVisitor from './visitors/anyNodeVisitor';
 import {
+  CodeAccessor,
   GeneratorParameters,
-  ImportFrom,
+  ImportFrom, InstanceDescriptor,
   RegistrationDescriptor,
 } from './generatorContext';
 
@@ -44,12 +45,13 @@ export default class RegistrationsParser {
   }
 
   private fillDependencies(parameters: GeneratorParameters, registrations: RegistrationDescriptor[], imports: ImportFrom[]): void {
-    /*for(const registration of registrations) {
-      if (!registration.instance?.accessor?.normalized?.importFrom) {
+    for(const registration of registrations) {
+      const instance = registration.instance;
+      if (!instance || !instance.accessor.importFrom) {
         continue;
       }
 
-      const filePath = `${registration.instance.accessor.normalized.importFrom.path}.ts`;
+      const filePath = `${instance.accessor.importFrom.normalized.path}.ts`;
       if (!existsSync(path.normalize(filePath))) {
         throw Error(`Package instances are not supported yet`);
       }
@@ -57,7 +59,7 @@ export default class RegistrationsParser {
       const dependencies: RegistrationDescriptor[] = [];
       this._visitor.visit(RegistrationsParser.getSyntax(filePath, parameters.scriptTarget), {
         modulePath: filePath,
-        instanceName: registration.instance?.accessor.normalized.name,
+        instanceName: instance.accessor.importFrom.normalized.name,
         mode: 'Dependent',
         registrations: dependencies,
         imports: imports
@@ -67,8 +69,88 @@ export default class RegistrationsParser {
         continue;
       }
 
-      dependencies.forEach(ctorArg => RegistrationsParser.assignArgumentSymbol(registration, ctorArg, registrations));
-    }*/
+      dependencies.forEach(ctorArg => RegistrationsParser.addInstanceDependencies(instance, ctorArg.service.accessor, registrations));
+    }
+  }
+
+  private static addInstanceDependencies(instance: InstanceDescriptor, constructorArg: CodeAccessor, allRegistrations: RegistrationDescriptor[]) {
+    const serviceRegistration = RegistrationsParser.tryFindRegistration(constructorArg, allRegistrations);
+    if (!serviceRegistration) {
+      throw Error(`The service type ${constructorArg.name} was not found in container builder`);
+    }
+
+    const symbolDescriptor = serviceRegistration.service.symbolDescriptor;
+    if (!symbolDescriptor) {
+      throw Error(`Failed to read the service registration symbol`)
+    }
+
+
+    instance.constructorArgs.push({
+      symbolDescriptor: symbolDescriptor,
+      resolveType: constructorArg.name === '[]' && serviceRegistration.service.accessor.name !== constructorArg.name ? 'Many' : 'One'
+    });
+  }
+
+  private static tryFindRegistration(constructorArg: CodeAccessor, allRegistrations: RegistrationDescriptor[]): RegistrationDescriptor | null {
+    for (const r of allRegistrations) {
+      if (RegistrationsParser.areEqual(constructorArg, r.service.accessor)) {
+        return r;
+      }
+    }
+
+    return null;
+  }
+
+  private static areEqual(ctor: CodeAccessor, registration: CodeAccessor): boolean {
+    if (registration.name === '[]') {
+      // check the registration as T[]
+      if (registration.child && ctor.name === '[]' && ctor.child) {
+        return this.areEqual(ctor.child, registration.child);
+      }
+
+      return false;
+    }
+
+    if (ctor.name === '[]') {
+      return !!ctor.child && this.areEqual(ctor.child, registration);
+    }
+
+    if (registration.importFrom) {
+      // register<L.Logger<T>> --> ConsoleMonitor(logger: Logger<T>)
+      // register<Logger<T>> --> ConsoleMonitor(logger: L.Logger<T>)
+      // register<L.Logger<T>> --> ConsoleMonitor(logger: L.Logger<T>)
+      // The aliased-accessor always has a normalized import,
+      // so we don't need to check the children here
+      const normalizedReg = registration.importFrom.normalized;
+      const normalizedCtor = ctor.importFrom?.normalized;
+      if (!normalizedCtor || normalizedCtor.kind !== normalizedReg.kind || normalizedCtor.name !== normalizedReg.name || normalizedCtor.path !== normalizedReg.path) {
+        return false;
+      }
+    }
+    else {
+      // register<Map<string, T>> --> ConsoleMonitor(users: Map<string, T>)
+      // Built-in types don't have the import declarations
+      if (ctor.importFrom || registration.name !== ctor.name) {
+        return false;
+      }
+    }
+
+    if (registration.typeNames && registration.typeNames.length !== 0) {
+      if (!ctor.typeNames || ctor.typeNames.length !== registration.typeNames.length) {
+        return false;
+      }
+
+      for(let i = 0; i < registration.typeNames.length; i++) {
+        if (!this.areEqual(registration.typeNames[i], ctor.typeNames[i])) {
+          return false;
+        }
+      }
+    }
+    else if (ctor.typeNames && ctor.typeNames.length !== 0) {
+      return false;
+    }
+
+    return true;
   }
 
   private static getSyntax(filePath: string, scriptTarget: ScriptTarget): Node {
