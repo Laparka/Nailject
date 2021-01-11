@@ -1,7 +1,6 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { HeritageClause, Node, SyntaxKind } from 'typescript';
 import { GeneratorContext, CodeAccessor } from '../generatorContext';
-import { getNormalizedImport, tryFindImportByAccessor } from '../utils';
 
 const dependenciesRegistrationDir = 'api/dependenciesRegistration';
 export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClause> {
@@ -16,22 +15,15 @@ export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClaus
 
     for(const type of node.types) {
       const interfaceAccessor = this.visitNext(type, context) as CodeAccessor;
-      if (!interfaceAccessor || !interfaceAccessor.name) {
+      if (!interfaceAccessor) {
         throw Error(`Invalid inheritance type`);
       }
 
-      const importDefinition = tryFindImportByAccessor(interfaceAccessor, context.imports);
-      if (!importDefinition) {
+      if (!interfaceAccessor.importFrom) {
         continue;
       }
 
-      interfaceAccessor.importFrom = importDefinition;
-      const normalizedImport = getNormalizedImport(interfaceAccessor);
-      if (!normalizedImport) {
-        continue;
-      }
-
-      if (normalizedImport.name === 'DependenciesRegistration' && normalizedImport.path.endsWith(dependenciesRegistrationDir)) {
+      if (interfaceAccessor.importFrom.normalized.name === 'DependenciesRegistration' && interfaceAccessor.importFrom.normalized.path.endsWith(dependenciesRegistrationDir)) {
         return interfaceAccessor;
       }
     }

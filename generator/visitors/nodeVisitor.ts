@@ -12,6 +12,10 @@ export abstract class NodeVisitorBase<TNode extends TypeScriptNode> implements N
     this._rootVisitor = rootVisitor;
   }
 
+  protected get rootVisitor() {
+    return this._rootVisitor;
+  }
+
   protected visitNext(node: TypeScriptNode, context: GeneratorContext): unknown {
     if (this._rootVisitor.canVisit(node)) {
       return this._rootVisitor.visit(node, context)

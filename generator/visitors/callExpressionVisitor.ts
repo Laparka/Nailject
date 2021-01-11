@@ -9,7 +9,6 @@ import {
   SymbolDescriptor
 } from '../generatorContext';
 import { LifetimeScope } from '../../api/containerBuilder';
-import { tryFindImportByAccessor } from '../utils';
 
 export default class CallExpressionVisitor extends NodeVisitorBase<CallExpression> {
   canVisit(node: Node): boolean {
@@ -62,22 +61,12 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       throw Error(`No instance type argument is defined for the ${methodCallAccessor.child.name}-method`)
     }
 
-    const serviceImport = tryFindImportByAccessor(serviceTypeAccessor, context.imports);
-    if (serviceImport) {
-      serviceTypeAccessor.importFrom = serviceImport;
-    }
-
     let symbolDescriptor: SymbolDescriptor | undefined;
 
     if (node.arguments.length === 1) {
       const argumentTypeAccessor = this.visitNext(node.arguments[0], context) as CodeAccessor;
       if (!argumentTypeAccessor) {
         throw Error(`Failed to parse the constructor argument type of ${instanceTypeAccessor.name}`)
-      }
-
-      const symbolTypeImport = tryFindImportByAccessor(argumentTypeAccessor, context.imports);
-      if (!symbolTypeImport) {
-        throw Error(`Failed to find a symbol-type registration ${argumentTypeAccessor.name} in import declarations`);
       }
 
       symbolDescriptor = {
@@ -97,11 +86,6 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
       symbolDescriptor: symbolDescriptor,
       accessor: serviceTypeAccessor
     };
-
-    const instanceTypeImport = tryFindImportByAccessor(instanceTypeAccessor, context.imports);
-    if (instanceTypeImport) {
-      instanceTypeAccessor.importFrom = instanceTypeImport;
-    }
 
     const instanceDescriptor: InstanceDescriptor = {
       accessor: instanceTypeAccessor,

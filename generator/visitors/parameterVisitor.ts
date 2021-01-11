@@ -1,7 +1,6 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { Node, ParameterDeclaration, SyntaxKind } from 'typescript';
 import { GeneratorContext, CodeAccessor } from '../generatorContext';
-import { getNormalizedImport, tryFindImportByAccessor } from '../utils';
 
 export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclaration> {
   canVisit(node: Node): boolean {
@@ -36,14 +35,7 @@ export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclarati
       throw Error(`The register argument ${containerBuilderInstanceName} type was not recognized`);
     }
 
-    const containerBuilderImport = tryFindImportByAccessor(typeAccessor, context.imports)
-    if (!containerBuilderImport) {
-      throw Error(`The register argument ${containerBuilderInstanceName} type was not found in imports`);
-    }
-
-    typeAccessor.importFrom = containerBuilderImport;
-    const normalized = getNormalizedImport(typeAccessor);
-    if (!normalized || normalized.name !== 'ContainerBuilder') {
+    if (!typeAccessor.importFrom || typeAccessor.importFrom.normalized.name !== 'ContainerBuilder') {
       throw Error(`The register argument ${containerBuilderInstanceName} must be of the ContainerBuilder-type`);
     }
 
@@ -62,11 +54,6 @@ export default class ParameterVisitor extends NodeVisitorBase<ParameterDeclarati
     const argTypeAccessor = this.visitNext(node.type, context) as CodeAccessor;
     if (!argTypeAccessor || !argTypeAccessor.name) {
       throw Error(`Failed to find the constructor argument type`);
-    }
-
-    const argTypeImport = tryFindImportByAccessor(argTypeAccessor, context.imports);
-    if (!argTypeImport) {
-      throw Error(`Failed to find the constructor argument type in imports: ${argTypeAccessor.name}`);
     }
 
     context.registrations.push({

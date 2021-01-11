@@ -10,20 +10,26 @@ export type GeneratorParameters = {
 
 export type GeneratorMode = 'Module' | 'Dependent';
 
-export type CodeAccessor = {
-  name: string;
-  importFrom?: ImportFrom;
-  typeNames?: CodeAccessor[];
-  child?: CodeAccessor;
-};
-
 export type ImportKind = 'Named' | 'Default' | 'Namespace';
+
 export type ImportFrom = {
   kind: ImportKind;
   name: string;
   alias: string;
   path: string;
   isExternal: boolean;
+};
+
+export type Import = {
+  raw: ImportFrom;
+  normalized: ImportFrom;
+};
+
+export type CodeAccessor = {
+  name: string;
+  importFrom?: Import;
+  typeNames?: CodeAccessor[];
+  child?: CodeAccessor;
 };
 
 export type SymbolDescriptor = {
