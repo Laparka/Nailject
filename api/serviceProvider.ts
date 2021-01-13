@@ -10,6 +10,16 @@ export interface ServiceScopeProvider {
   getTransientServiceProvider(): ServiceProvider;
 }
 
+export const ServiceProviderSymbol = Symbol.for('PileupleServiceProvider');
+
+class ServiceProviderSelfResolver implements ServiceResolver {
+  constructor(private readonly _serviceProvider: ServiceProvider) {
+  }
+  resolve(scopeProvider: ServiceScopeProvider): any {
+    return this._serviceProvider;
+  }
+}
+
 export class CompiledServiceProvider implements ServiceProvider, ServiceScopeProvider {
   private static _SingletonServiceProvider: ServiceProvider;
   private readonly _serviceResolversMap: Map<symbol, ServiceResolver[]>;
@@ -22,7 +32,9 @@ export class CompiledServiceProvider implements ServiceProvider, ServiceScopePro
 
   static initialize(serviceResolvers: Map<symbol, ServiceResolver[]>): ServiceProvider {
     if (!CompiledServiceProvider._SingletonServiceProvider) {
-      CompiledServiceProvider._SingletonServiceProvider = new CompiledServiceProvider(serviceResolvers);
+      const singletonProvider = new CompiledServiceProvider(serviceResolvers);
+      serviceResolvers.set(ServiceProviderSymbol, [new ServiceProviderSelfResolver(singletonProvider)]);
+      CompiledServiceProvider._SingletonServiceProvider = singletonProvider;
     }
 
     return CompiledServiceProvider._SingletonServiceProvider;

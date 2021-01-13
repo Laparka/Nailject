@@ -1,11 +1,17 @@
-{%- assign imports = registration | get_imports -%}
+import { ServiceProvider as PileupleServiceProvider} from 'pileuple/api/serviceProvider';
+import {
+    {{ registration.scope }}ServiceResolver as PileupleScopedResolver,
+    ServiceResolver as PileupleServiceResolver,
+    InstanceConstructor as PileupleCtor
+} from 'pileuple/api/serviceResolver';
+
+{% assign imports = registration | get_imports %}
 {%- for importModel in imports -%}
 {{ importModel | write_import: outputDir }}
 {% endfor %}
-
-class Resolver extends {{ registration.scope }}ServiceResolver<{{ registration.service.accessor | read_accessor: true }}> {
-    protected doResolve(serviceProvider: ServiceProvider): {{ registration.service.accessor | read_accessor: true }} {
-        const ctor: InstanceConstructor<{{ registration.instance.accessor | read_accessor: true }}> = {{ registration.instance.accessor | read_accessor: false }};
+class PileupleInstanceResolver extends PileupleScopedResolver<{{ registration.service.accessor | read_accessor: true }}> {
+    protected doResolve(serviceProvider: PileupleServiceProvider): {{ registration.service.accessor | read_accessor: true }} {
+        const ctor: PileupleCtor<{{ registration.instance.accessor | read_accessor: true }}> = {{ registration.instance.accessor | read_accessor: false }};
         const args: any[] = [];
 {% for ctorArg in registration.instance.constructorArgs %}
         args.push(serviceProvider.resolve{{ ctorArg.resolveType }}({{ ctorArg.symbolDescriptor | read_accessor: false }}));
@@ -15,4 +21,15 @@ class Resolver extends {{ registration.scope }}ServiceResolver<{{ registration.s
         {{ newLine }}
         return new ctor(...args);
     }
+}
+
+export function registerResolver(resolvers: Map<symbol, PileupleServiceResolver[]>): void {
+    const symbolId = {{ registration.service.symbolDescriptor | read_accessor: false }};
+    let symbolResolvers = resolvers.get(symbolId);
+    if (!symbolResolvers) {
+        symbolResolvers = [];
+        resolvers.set(symbolId, symbolResolvers);
+    }
+
+    symbolResolvers.push(new PileupleInstanceResolver());
 }

@@ -67,7 +67,7 @@ export default class CallExpressionVisitor extends NodeVisitorBase<CallExpressio
 
     const argumentTypeAccessor = this.visitNext(node.arguments[0], context) as CodeAccessor;
     if (!argumentTypeAccessor) {
-      throw Error(`Failed to parse the constructor argument type of ${instanceTypeAccessor.name}`)
+      throw Error(`Failed to parse the constructor argument type of ${instanceTypeAccessor.name} type. Reference declaration is required`)
     }
 
     normalizeAccessor(argumentTypeAccessor, context.imports);
