@@ -47,7 +47,7 @@ export default class RegistrationsParser {
   private fillDependencies(parameters: GeneratorParameters, registrations: RegistrationDescriptor[], imports: ImportFrom[]): void {
     for(const registration of registrations) {
       const instance = registration.instance;
-      if (!instance || !instance.accessor.importFrom) {
+      if (!instance || !instance.accessor.importFrom || instance.accessor.importFrom.raw.isExternal) {
         continue;
       }
 
@@ -84,7 +84,6 @@ export default class RegistrationsParser {
       throw Error(`Failed to read the service registration symbol`)
     }
 
-
     instance.constructorArgs.push({
       symbolDescriptor: symbolDescriptor,
       resolveType: constructorArg.name === '[]' && serviceRegistration.service.accessor.name !== constructorArg.name ? 'Many' : 'One'
@@ -92,27 +91,33 @@ export default class RegistrationsParser {
   }
 
   private static tryFindRegistration(constructorArg: CodeAccessor, allRegistrations: RegistrationDescriptor[]): RegistrationDescriptor | null {
+    let nonGeneric: RegistrationDescriptor | null = null;
     for (const r of allRegistrations) {
-      if (RegistrationsParser.areEqual(constructorArg, r.service.accessor)) {
+      const isExactMatch = RegistrationsParser.areEqual(constructorArg, r.service.accessor, true);
+      if (isExactMatch) {
         return r;
+      }
+
+      if (RegistrationsParser.areEqual(constructorArg, r.service.accessor, false)) {
+        nonGeneric = r;
       }
     }
 
-    return null;
+    return nonGeneric;
   }
 
-  private static areEqual(ctor: CodeAccessor, registration: CodeAccessor): boolean {
+  private static areEqual(ctor: CodeAccessor, registration: CodeAccessor, exact: boolean): boolean {
     if (registration.name === '[]') {
       // check the registration as T[]
       if (registration.child && ctor.name === '[]' && ctor.child) {
-        return this.areEqual(ctor.child, registration.child);
+        return this.areEqual(ctor.child, registration.child, exact);
       }
 
       return false;
     }
 
     if (ctor.name === '[]') {
-      return !!ctor.child && this.areEqual(ctor.child, registration);
+      return !!ctor.child && this.areEqual(ctor.child, registration, exact);
     }
 
     if (registration.importFrom) {
@@ -140,9 +145,13 @@ export default class RegistrationsParser {
         return false;
       }
 
-      for(let i = 0; i < registration.typeNames.length; i++) {
-        if (!this.areEqual(registration.typeNames[i], ctor.typeNames[i])) {
-          return false;
+      if (exact) {
+        // TODO: Add exact match and similar-match return.
+        //  Give priority to exact match registration and, if not found, resolve type-argument-less service
+        for (let i = 0; i < registration.typeNames.length; i++) {
+          if (!this.areEqual(registration.typeNames[i], ctor.typeNames[i], exact)) {
+            return false;
+          }
         }
       }
     }

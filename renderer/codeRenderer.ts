@@ -1,6 +1,7 @@
 import { CodeWriter } from './codeWriter';
 import { Liquid } from 'liquidjs';
 import { RegistrationDescriptor } from '../generator/generatorContext';
+import { readAccessor } from './templateFilters';
 
 export interface CodeRenderer {
   renderResolver(templatePath: string, registration: RegistrationDescriptor): void;
@@ -12,6 +13,7 @@ export class LiquidCodeRenderer implements CodeRenderer {
   constructor(codeWriter: CodeWriter) {
     this._codeWriter = codeWriter;
     this._liquid = new Liquid();
+    this._liquid.registerFilter('read_accessor', readAccessor);
   }
 
   renderResolver(templatePath: string, registration: RegistrationDescriptor): void {
