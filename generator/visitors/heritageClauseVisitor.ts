@@ -2,7 +2,7 @@ import { NodeVisitorBase } from './nodeVisitor';
 import { HeritageClause, Node, SyntaxKind } from 'typescript';
 import { GeneratorContext, CodeAccessor } from '../generatorContext';
 
-const dependenciesRegistrationDir = 'api/dependenciesRegistration';
+const dependenciesRegistrationDir = 'pileuple-api/dependenciesRegistration';
 export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClause> {
   canVisit(node: Node): boolean {
     return node.kind === SyntaxKind.HeritageClause;
@@ -23,7 +23,11 @@ export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClaus
         continue;
       }
 
-      if (interfaceAccessor.importFrom.normalized.name === 'DependenciesRegistration' && interfaceAccessor.importFrom.normalized.path.endsWith(dependenciesRegistrationDir)) {
+      if (interfaceAccessor.importFrom.normalized.name !== 'DependenciesRegistration') {
+        continue;
+      }
+
+      if (interfaceAccessor.importFrom.normalized.path === dependenciesRegistrationDir) {
         return interfaceAccessor;
       }
     }

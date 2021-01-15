@@ -11,9 +11,13 @@
     ],
     "allowJs": true,
     "noUnusedLocals": true,
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "paths": {
+      "pileuple-api/*": [ "pileuple-api/*" ]
+    }
   },
   "compileOnSave": false,
-  "include": ["bin/*", "generator/*", "api/*", "index.ts"],
+  "include": ["bin/*", "generator/*",
+    "pileuple-api/*", "index.ts"],
   "exclude": ["node_modules", "**/__tests__/*"]
 }

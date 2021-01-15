@@ -1,6 +1,12 @@
 # Overview
-PileUple is a Compile-time IoC library, which generates Service Resolvers and an IoC container for TypeScript code. The library is using the TypeScript parser to build and analyze the AST of your source code.
-There are a lot of IoC libraries implemented for TypeScript. Most of these libraries are clones that use reflect-metadata and experimental decorators libraries. But since TypeScript is a transpiler, it's already a "reflector" itself.
+PileUple is an IoC Container library, which generates Service Resolvers and an IoC container for TypeScript code.
+The library uses the TypeScript parser to build and analyze the AST of your source code.
+There are a lot of IoC libraries implemented for TypeScript. Most of these libraries are clones that use reflect-metadata and experimental decorators libraries. But since TypeScript is a transpiler itself, it's already a "reflector".
+
+# Motivation
+My opinion is that Dependency Injection for Javascript applications is not something popular. Besides, most of the Javascript frameworks already have a built-in dependency injection solution.
+I wanted something that could let me write a backend code for my AWS Lambda project faster without manually providing dependencies in constructors and manage them every time I do a refactoring.
+This library helps me to generate all the dependency resolvers every time I build my project. 
 
 >:warning: The library is still in development. This is my first TypeScript learning project
 > I have a lot of plans. Mainly, I need this library for my AWS Lambda project,
@@ -9,6 +15,7 @@ There are a lot of IoC libraries implemented for TypeScript. Most of these libra
 # Basic Usage
 ```
 npm install pileuple --save-dev
+npm install pileuple-api --save-prod
 ```
 
 >Project Structure Example
@@ -28,12 +35,12 @@ First, you need to write a registration class to provide dependencies.
 >import { Logger, ConsoleLoggerImpl } from "./services/logger";
 >import { TYPES } from "./services/types";
 >import { ApiService, DebugApiServiceImpl } from "./services/apiService";
->import { ContainerBuilder } from 'pileuple/api/containerBuilder';
->import { DependenciesRegistration } from 'pileuple/api/dependenciesRegistration';
+>import { ContainerBuilder } from 'pileuple-api/containerBuilder';
+>import { DependenciesRegistration } from 'pileuple-api/dependenciesRegistration';
 >
 >export class Registrations implements DependenciesRegistration {
 >    register(containerBuilder: ContainerBuilder): void {
->        containerBuilder.addTransient<Logger, ConsoleLoggerImpl>();
+>        containerBuilder.addTransient<Logger, ConsoleLoggerImpl>(TYPES.Logger);
 >        containerBuilder.addSingleton<ApiService, DebugApiServiceImpl>(TYPES.ApiService);
 >    }
 >}
@@ -75,16 +82,15 @@ The code-generator then creates:
 >import { ApiService as ApiService } from '../apiService';
 >import { DebugApiServiceImpl as DebugApiServiceImpl } from '../apiService';
 >
->import { TYPES as __SERVICE_TYPE_SYMBOLS } from './types.generated';
 >import { TYPES } from '../types';
->import { SingletonServiceResolver, InstanceConstructor, ServiceResolver } from 'pileuple/api/serviceResolver';
->import { ServiceProvider } from 'pileuple/api/serviceProvider';
+>import { SingletonServiceResolver, InstanceConstructor, ServiceResolver } from 'pileuple-api/serviceResolver';
+>import { ServiceProvider } from 'pileuple-api/serviceProvider';
 >
 >class Resolver extends SingletonServiceResolver<ApiService> {
 >    doResolve(serviceProvider: ServiceProvider): ApiService {
 >        const ctor: InstanceConstructor<DebugApiServiceImpl> = DebugApiServiceImpl;
 >        const ctorArgs: any[] = [];
->        ctorArgs.push(serviceProvider.resolveOne(__SERVICE_TYPE_SYMBOLS._srcserviceslogger.Logger));
+>        ctorArgs.push(serviceProvider.resolveOne(TYPES.Logger));
 >        return new ctor(...ctorArgs);
 >    }
 >}
@@ -107,23 +113,27 @@ The code-generator then creates:
 >import { register as register1 } from './consoleLoggerImplOfLoggerTransientServiceResolver';
 >import { register as register2 } from './debugApiServiceImplOfApiServiceSingletonServiceResolver';
 >
->import { ServiceProvider, CompiledServiceProvider } from 'pileuple/api/serviceProvider';
->import { ServiceResolver } from 'pileuple/api/serviceResolver';
+>import { ServiceProvider, CompiledServiceProvider } from 'pileuple-api/serviceProvider';
+>import { ServiceResolver } from 'pileuple-api/serviceResolver';
 >
 >const symbolResolvers = new Map<symbol, ServiceResolver[]>();
 >
 >register1(symbolResolvers);
 >register2(symbolResolvers);
->export const serviceProvider: ServiceProvider = CompiledServiceProvider.initialize(symbolResolvers);
+>const serviceProvider: ServiceProvider = CompiledServiceProvider.initialize(symbolResolvers);
+>export function getServiceProvider() {
+>  return serviceProvider;
+>}
 >```
 
 ## 4) Use in your code
 Now, you are ready to use the IoC service provider:
 
 ```typescript
-import { serviceProvider } from './services/__generated';
+import { getServiceProvider } from './services/__generated';
 import { ApiService } from './services/apiService';
 import { TYPES } from './services/__generated/types.generated';
+const serviceProvider = getServiceProvider();
 const apiService = serviceProvider.resolveOne<ApiService>(TYPES.ApiService);
-const response = apiService.post('/api/signIn', {username: "local", password: "h0$t"}, new Map<string, string>([["request-id","12321321"]]))
+const response = apiService.post('/pileuple-api/signIn');
 ```

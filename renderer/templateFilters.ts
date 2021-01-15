@@ -43,6 +43,9 @@ export function getImports(registration: RegistrationDescriptor): ImportFrom[] {
 
   if (registration.instance) {
     collectImports(registration.instance.accessor, importsByPath);
+    if (registration.instance.constructorArgs) {
+      registration.instance.constructorArgs.forEach(ctor => collectImports(ctor.symbolDescriptor, importsByPath));
+    }
   }
 
   const imports: ImportFrom[] = [];

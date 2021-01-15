@@ -1,9 +1,9 @@
-import { ServiceProvider as PileupleServiceProvider} from 'pileuple/api/serviceProvider';
+import { ServiceProvider as PileupleServiceProvider} from 'pileuple-api/serviceProvider';
 import {
     {{ registration.scope }}ServiceResolver as PileupleScopedResolver,
     ServiceResolver as PileupleServiceResolver,
     InstanceConstructor as PileupleCtor
-} from 'pileuple/api/serviceResolver';
+} from 'pileuple-api/serviceResolver';
 
 {% assign imports = registration | get_imports %}
 {%- for importModel in imports -%}

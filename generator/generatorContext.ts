@@ -1,4 +1,4 @@
-import { LifetimeScope } from '../api/containerBuilder';
+import { LifetimeScope } from '../pileuple-api/containerBuilder';
 import { ScriptTarget } from 'typescript';
 
 export type GeneratorParameters = {

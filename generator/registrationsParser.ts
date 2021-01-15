@@ -76,7 +76,17 @@ export default class RegistrationsParser {
   private static addInstanceDependencies(instance: InstanceDescriptor, constructorArg: CodeAccessor, allRegistrations: RegistrationDescriptor[]) {
     const serviceRegistration = RegistrationsParser.tryFindRegistration(constructorArg, allRegistrations);
     if (!serviceRegistration) {
-      throw Error(`The service type ${constructorArg.name} was not found in container builder`);
+      const serviceProviderDescriptor = RegistrationsParser.isServiceProvider(constructorArg);
+      if (serviceProviderDescriptor) {
+        instance.constructorArgs.push({
+          resolveType: constructorArg.name === '[]' ? 'Many' : 'One',
+          symbolDescriptor: serviceProviderDescriptor
+        })
+
+        return;
+      }
+
+      throw Error(`The service type "${constructorArg.name}" was not found in container builder`);
     }
 
     const symbolDescriptor = serviceRegistration.service.symbolDescriptor;
@@ -170,5 +180,46 @@ export default class RegistrationsParser {
     const fileContent = readFileSync(filePath, { encoding: "utf8" });
     const file: SourceFile = createSourceFile("inline-content.ts", fileContent.toString(), scriptTarget);
     return file.getChildAt(0);
+  }
+
+  private static isServiceProvider(pathAccessor: CodeAccessor): CodeAccessor | null {
+    if (!pathAccessor) {
+      return null;
+    }
+
+    if (pathAccessor.name === '[]') {
+      if (pathAccessor.child) {
+        return RegistrationsParser.isServiceProvider(pathAccessor.child);
+      }
+
+      return null;
+    }
+
+    if (!pathAccessor.importFrom) {
+      return null;
+    }
+
+    if (pathAccessor.importFrom.normalized.path !== 'pileuple-api/serviceProvider') {
+      return null;
+    }
+
+    if (pathAccessor.importFrom.normalized.name !== 'ServiceProvider') {
+      return null;
+    }
+
+    const importDefinition: ImportFrom = {
+      name: 'ServiceProviderSymbol',
+      path: pathAccessor.importFrom.normalized.path,
+      isExternal: pathAccessor.importFrom.normalized.isExternal,
+      alias: 'ServiceProviderSymbol',
+      kind: 'Named'
+    }
+    return {
+      importFrom: {
+        normalized: importDefinition,
+        raw: importDefinition
+      },
+      name: importDefinition.name
+    }
   }
 }

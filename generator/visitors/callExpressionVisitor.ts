@@ -7,7 +7,7 @@ import {
   RegistrationDescriptor,
   ServiceDescriptor
 } from '../generatorContext';
-import { LifetimeScope } from '../../api/containerBuilder';
+import { LifetimeScope } from 'pileuple-api/containerBuilder';
 import { normalizeAccessor } from '../utils';
 
 export default class CallExpressionVisitor extends NodeVisitorBase<CallExpression> {
