@@ -13,8 +13,7 @@ const namedImportVisitor_1 = __importDefault(require("./namedImportVisitor"));
 const importSpecifierVisitor_1 = __importDefault(require("./importSpecifierVisitor"));
 const classDeclarationVisitor_1 = __importDefault(require("./classDeclarationVisitor"));
 const heritageClauseVisitor_1 = __importDefault(require("./heritageClauseVisitor"));
-const typeArgumentVisitor_1 = __importDefault(require("./typeArgumentVisitor"));
-const typeReferenceVisitor_1 = __importDefault(require("./typeReferenceVisitor"));
+const typeVisitors_1 = require("./typeVisitors");
 const propertyAccessExpressionVisitor_1 = __importDefault(require("./propertyAccessExpressionVisitor"));
 const methodDeclarationVisitor_1 = __importDefault(require("./methodDeclarationVisitor"));
 const parameterVisitor_1 = __importDefault(require("./parameterVisitor"));
@@ -37,8 +36,8 @@ class AnyNodeVisitor {
             new importSpecifierVisitor_1.default(this),
             new classDeclarationVisitor_1.default(this),
             new heritageClauseVisitor_1.default(this),
-            new typeArgumentVisitor_1.default(this),
-            new typeReferenceVisitor_1.default(this),
+            new typeVisitors_1.TypeArgumentVisitor(this),
+            new typeVisitors_1.TypeReferenceVisitor(this),
             new propertyAccessExpressionVisitor_1.default(this),
             new methodDeclarationVisitor_1.default(this),
             new parameterVisitor_1.default(this),
@@ -50,7 +49,7 @@ class AnyNodeVisitor {
             new arrayTypeVisitor_1.default(this)
         ];
     }
-    canVisit(node) {
+    canVisit() {
         return true;
     }
     visit(node, context) {

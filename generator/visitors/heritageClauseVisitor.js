@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const nodeVisitor_1 = require("./nodeVisitor");
 const typescript_1 = require("typescript");
-const utils_1 = require("../utils");
+const dependenciesRegistrationDir = 'pileuple-api/dependenciesRegistration';
 class HeritageClauseVisitor extends nodeVisitor_1.NodeVisitorBase {
     canVisit(node) {
         return node.kind === typescript_1.SyntaxKind.HeritageClause;
@@ -12,17 +12,20 @@ class HeritageClauseVisitor extends nodeVisitor_1.NodeVisitorBase {
             return;
         }
         for (const type of node.types) {
-            const typeCodeAccessor = this.visitNext(type, context);
-            if (!typeCodeAccessor || !typeCodeAccessor.name) {
+            const interfaceAccessor = this.visitNext(type, context);
+            if (!interfaceAccessor) {
                 throw Error(`Invalid inheritance type`);
             }
-            if (HeritageClauseVisitor.hasImport(typeCodeAccessor.name, context.imports) && utils_1.getLastPropertyAccessor(typeCodeAccessor) === 'DependenciesRegistration') {
-                return typeCodeAccessor;
+            if (!interfaceAccessor.importFrom) {
+                continue;
+            }
+            if (interfaceAccessor.importFrom.normalized.name !== 'DependenciesRegistration') {
+                continue;
+            }
+            if (interfaceAccessor.importFrom.normalized.path === dependenciesRegistrationDir) {
+                return interfaceAccessor;
             }
         }
-    }
-    static hasImport(name, imports) {
-        return !!utils_1.tryFindImportType(name, imports);
     }
 }
 exports.default = HeritageClauseVisitor;

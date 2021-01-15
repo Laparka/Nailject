@@ -5,9 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const commander_1 = __importDefault(require("commander"));
-const __1 = require("../");
-const codeWriter_1 = require("../generator/services/codeWriter");
+const codeWriter_1 = require("../renderer/codeWriter");
 const typescript_1 = require("typescript");
+const registrationsParser_1 = __importDefault(require("../generator/registrationsParser"));
+const codeRenderer_1 = require("../renderer/codeRenderer");
 const program = commander_1.default;
 const usage = program
     .usage('<filename> [options]')
@@ -23,11 +24,19 @@ let scriptTarget = typescript_1.ScriptTarget.ES2017;
 if (options.scriptTarget) {
     scriptTarget = typescript_1.ScriptTarget[options.scriptTarget.toString()];
 }
-const generator = new __1.IoCGenerator(new codeWriter_1.FileCodeWriter());
+const parser = new registrationsParser_1.default();
 const params = {
     outputDirectory: options.outputDir,
     registrationClassName: options.moduleName,
     registrationFilePath: fileName,
     scriptTarget: scriptTarget
 };
-console.log(generator.generate(params));
+const registrations = parser.parse(params);
+const codeWriter = new codeWriter_1.FileCodeWriter();
+const renderer = new codeRenderer_1.LiquidCodeRenderer(codeWriter);
+const resolvers = [];
+for (const r of registrations) {
+    resolvers.push(renderer.renderResolver(r, params.outputDirectory));
+}
+console.log(resolvers);
+console.log(renderer.renderServiceProvider(resolvers, params.outputDirectory));

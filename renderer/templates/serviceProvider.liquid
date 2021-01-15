@@ -1,0 +1,15 @@
+{%- for resolver in resolvers -%}
+    import { registerResolver as register{{ forloop.index }} } from './{{ resolver }}';
+{% endfor %}
+import { ServiceProvider, CompiledServiceProvider } from 'pileuple-api/serviceProvider';
+import { ServiceResolver } from 'pileuple-api/serviceResolver';
+
+const symbolResolvers = new Map<symbol, ServiceResolver[]>();
+{% for resolver in resolvers %}
+register{{ forloop.index }}(symbolResolvers);
+{%- endfor -%}
+{{ dummy }}
+const serviceProvider: ServiceProvider = CompiledServiceProvider.initialize(symbolResolvers);
+export function getServiceProvider() {
+    return serviceProvider;
+}

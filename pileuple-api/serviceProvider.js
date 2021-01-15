@@ -1,6 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CompiledServiceProvider = void 0;
+exports.CompiledServiceProvider = exports.ServiceProviderSymbol = void 0;
+exports.ServiceProviderSymbol = Symbol.for('PileupleServiceProvider');
+class ServiceProviderSelfResolver {
+    constructor(_serviceProvider) {
+        this._serviceProvider = _serviceProvider;
+    }
+    resolve(scopeProvider) {
+        return this._serviceProvider;
+    }
+}
 class CompiledServiceProvider {
     constructor(serviceResolvers) {
         this._serviceResolversMap = serviceResolvers;
@@ -8,7 +17,9 @@ class CompiledServiceProvider {
     }
     static initialize(serviceResolvers) {
         if (!CompiledServiceProvider._SingletonServiceProvider) {
-            CompiledServiceProvider._SingletonServiceProvider = new CompiledServiceProvider(serviceResolvers);
+            const singletonProvider = new CompiledServiceProvider(serviceResolvers);
+            serviceResolvers.set(exports.ServiceProviderSymbol, [new ServiceProviderSelfResolver(singletonProvider)]);
+            CompiledServiceProvider._SingletonServiceProvider = singletonProvider;
         }
         return CompiledServiceProvider._SingletonServiceProvider;
     }

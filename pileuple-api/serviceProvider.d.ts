@@ -7,6 +7,7 @@ export interface ServiceScopeProvider {
     getSingletonServiceProvider(): ServiceProvider;
     getTransientServiceProvider(): ServiceProvider;
 }
+export declare const ServiceProviderSymbol: unique symbol;
 export declare class CompiledServiceProvider implements ServiceProvider, ServiceScopeProvider {
     private static _SingletonServiceProvider;
     private readonly _serviceResolversMap;

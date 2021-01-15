@@ -4,6 +4,9 @@ export default class RegistrationsParser {
     constructor();
     parse(parameters: GeneratorParameters): RegistrationDescriptor[];
     private fillDependencies;
-    private static assignArgumentSymbol;
+    private static addInstanceDependencies;
+    private static tryFindRegistration;
+    private static areEqual;
     private static getSyntax;
+    private static isServiceProvider;
 }

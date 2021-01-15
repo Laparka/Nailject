@@ -11,8 +11,7 @@ import NamedImportVisitor from './namedImportVisitor';
 import ImportSpecifierVisitor from './importSpecifierVisitor';
 import ClassDeclarationVisitor from './classDeclarationVisitor';
 import HeritageClauseVisitor from './heritageClauseVisitor';
-import TypeArgumentVisitor from './typeArgumentVisitor';
-import TypeReferenceVisitor from './typeReferenceVisitor';
+import { TypeArgumentVisitor, TypeReferenceVisitor } from './typeVisitors';
 import PropertyAccessExpressionVisitor from './propertyAccessExpressionVisitor';
 import MethodDeclarationVisitor from './methodDeclarationVisitor';
 import ParameterVisitor from './parameterVisitor';
@@ -50,11 +49,11 @@ export default class AnyNodeVisitor implements NodeVisitor {
       new ArrayTypeVisitor(this)
     ];
   }
-  canVisit(node: Node): boolean {
+  canVisit(): boolean {
     return true;
   }
 
-  visit(node: Node, context: GeneratorContext): any | void {
+  visit(node: Node, context: GeneratorContext): unknown {
     for(const visitor of this._visitors) {
       if (visitor.canVisit(node)) {
         return visitor.visit(node, context);

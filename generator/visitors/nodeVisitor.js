@@ -5,6 +5,9 @@ class NodeVisitorBase {
     constructor(rootVisitor) {
         this._rootVisitor = rootVisitor;
     }
+    get rootVisitor() {
+        return this._rootVisitor;
+    }
     visitNext(node, context) {
         if (this._rootVisitor.canVisit(node)) {
             return this._rootVisitor.visit(node, context);

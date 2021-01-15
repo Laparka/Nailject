@@ -8,12 +8,12 @@ export default class PropertyAccessExpressionVisitor extends NodeVisitorBase<Pro
   }
 
   doVisit(node: PropertyAccessExpression, context: GeneratorContext): CodeAccessor {
-    const instanceTokens = this.visitNext(node.expression, context);
+    const instanceTokens = this.visitNext(node.expression, context) as CodeAccessor;
     if (!instanceTokens) {
       throw Error(`The instance property is not defined`);
     }
 
-    const propertyTokens = this.visitNext(node.name, context);
+    const propertyTokens = this.visitNext(node.name, context) as CodeAccessor;
     if (!propertyTokens) {
       throw Error(`Property accessor is missing or multiple results were returned`);
     }

@@ -1,8 +1,8 @@
 import { NodeVisitorBase } from './nodeVisitor';
 import { HeritageClause, Node, SyntaxKind } from 'typescript';
-import { GeneratorContext, CodeAccessor, ImportFrom } from '../generatorContext';
-import { getLastPropertyAccessor, tryFindImportType } from '../utils';
+import { GeneratorContext, CodeAccessor } from '../generatorContext';
 
+const dependenciesRegistrationDir = 'pileuple-api/dependenciesRegistration';
 export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClause> {
   canVisit(node: Node): boolean {
     return node.kind === SyntaxKind.HeritageClause;
@@ -14,18 +14,22 @@ export default class HeritageClauseVisitor extends NodeVisitorBase<HeritageClaus
     }
 
     for(const type of node.types) {
-      const typeCodeAccessor = this.visitNext(type, context) as CodeAccessor;
-      if (!typeCodeAccessor || !typeCodeAccessor.name) {
+      const interfaceAccessor = this.visitNext(type, context) as CodeAccessor;
+      if (!interfaceAccessor) {
         throw Error(`Invalid inheritance type`);
       }
 
-      if (HeritageClauseVisitor.hasImport(typeCodeAccessor.name, context.imports) && getLastPropertyAccessor(typeCodeAccessor) === 'DependenciesRegistration') {
-        return typeCodeAccessor;
+      if (!interfaceAccessor.importFrom) {
+        continue;
+      }
+
+      if (interfaceAccessor.importFrom.normalized.name !== 'DependenciesRegistration') {
+        continue;
+      }
+
+      if (interfaceAccessor.importFrom.normalized.path === dependenciesRegistrationDir) {
+        return interfaceAccessor;
       }
     }
-  }
-
-  private static hasImport(name: string, imports: ImportFrom[]): boolean {
-    return !!tryFindImportType(name, imports);
   }
 }

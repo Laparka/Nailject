@@ -4,6 +4,6 @@ import { GeneratorContext } from '../generatorContext';
 export default class AnyNodeVisitor implements NodeVisitor {
     private readonly _visitors;
     constructor();
-    canVisit(node: Node): boolean;
-    visit(node: Node, context: GeneratorContext): any | void;
+    canVisit(): boolean;
+    visit(node: Node, context: GeneratorContext): unknown;
 }

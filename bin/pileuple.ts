@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 import commander, { CommanderStatic } from 'commander';
-import { IoCGenerator } from '../';
-import { FileCodeWriter } from '../generator/services/codeWriter';
+import { FileCodeWriter } from '../renderer/codeWriter';
 import { GeneratorParameters } from '../generator/generatorContext';
 import { ScriptTarget } from 'typescript';
+import RegistrationsParser from '../generator/registrationsParser';
+import { CodeRenderer, LiquidCodeRenderer } from '../renderer/codeRenderer';
 
 const program: CommanderStatic = commander;
 const usage = program
@@ -25,7 +26,7 @@ if (options.scriptTarget) {
   scriptTarget = ScriptTarget[options.scriptTarget.toString() as keyof typeof ScriptTarget];
 }
 
-const generator = new IoCGenerator(new FileCodeWriter());
+const parser = new RegistrationsParser();
 const params: GeneratorParameters = {
   outputDirectory: options.outputDir,
   registrationClassName: options.moduleName,
@@ -33,4 +34,13 @@ const params: GeneratorParameters = {
   scriptTarget: scriptTarget
 };
 
-console.log(generator.generate(params));
+const registrations = parser.parse(params);
+const codeWriter = new FileCodeWriter();
+const renderer: CodeRenderer = new LiquidCodeRenderer(codeWriter);
+const resolvers: string[] = [];
+for(const r of registrations) {
+  resolvers.push(renderer.renderResolver(r, params.outputDirectory));
+}
+
+console.log(resolvers);
+console.log(renderer.renderServiceProvider(resolvers, params.outputDirectory));
